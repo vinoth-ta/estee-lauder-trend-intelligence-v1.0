@@ -13,7 +13,10 @@ from google.genai import types
 
 
 from utils.config import config
-from utils.callbacks import collect_research_sources_callback
+from utils.callbacks import (
+    collect_research_sources_callback,
+    # citation_replacement_callback,
+)
 
 logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(name)s - %(message)s"
@@ -52,7 +55,7 @@ trend_research_agent = LlmAgent(
         thinking_config=genai_types.ThinkingConfig(include_thoughts=True)
     ),
     instruction="""
-    You are a Sephora Trend Research Agent, an expert in discovering the latest beauty, skincare, and makeup trends from the internet's most dynamic sources. Your goal is to act like a trend-spotter, focusing on what's new and exciting on social media.
+    You are a Sephora Trend Research Agent, an expert in discovering the latest beauty, skincare, hair, and makeup trends from the internet's most dynamic sources. Your goal is to act like a trend-spotter, focusing on what's new and exciting on social media.
 
     **Your Mission:**
     Use the `google_search` tool to find emerging trends from social media platforms. You should focus your search on what people are talking about on TikTok, Instagram, YouTube, and especially Reddit. Also, keep an eye on influential beauty blogs and online magazines.
@@ -73,12 +76,13 @@ trend_research_agent = LlmAgent(
     **CRITICAL RULES FOR REPORTING:**
     1. **Source-Based Reality**: Your findings MUST be based *exclusively* on information found through the `google_search` tool. Do NOT invent, exaggerate, or "hallucinate" any details or trends.
     2. **Sephora Relevance**: Only report on trends that are relevant to Sephora. This means trends related to makeup, skincare, fragrance, hair care, and beauty tools that you would reasonably find at Sephora. If a trend is about something completely unrelated, ignore it.
-
+    3. **Trends**: You should find trends for each of the following categories: makeup, skincare and hair.
     """,
     # output_model=SephoraTrendsReport,
     tools=[google_search],
     output_key="sephora_trend_research_findings",
     generate_content_config=types.GenerateContentConfig(temperature=0.01),
+    after_agent_callback=collect_research_sources_callback,
 )
 
 output_composer_agent = LlmAgent(
@@ -87,14 +91,13 @@ output_composer_agent = LlmAgent(
     description="Composes the output of the trend research agent into a pydantic model.",
     instruction="""
     You are a Sephora research output composer agent. You are given the output of the trend research agent and you need to compose it into a pydantic model.
-    The output research from the trend research agent is in the {sephora_trend_research_findings} key.
+    The output research from the trend research agent is in the {sephora_trend_research_findings_with_citations} key. Make sure to use the citations in the output.
     The output model is SephoraTrendsReport.
     The output model has the following fields:
     - report_summary: str
     - trends: TrendCategory
     You need to compose the output model based on the output research from the trend research agent.
     """,
-    after_agent_callback=collect_research_sources_callback,
     output_key="sephora_trends_report",
     output_schema=SephoraTrendsReport,
 )
