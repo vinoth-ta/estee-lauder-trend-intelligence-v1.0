@@ -182,39 +182,40 @@ export function ComprehensiveTrendsDisplay({
     return (
       <div key={`${category}-${trend.name}`}>
         <div
-          className={`cursor-pointer rounded-lg border p-3 transition-all duration-200 ${
-            isSelected ? "ring-2 ring-primary bg-accent/30" : ""
-          }`}
+          className={`cursor-pointer rounded-lg border p-4 transition-all duration-200 ${isSelected ? "ring-2 ring-primary bg-card" : "hover:bg-muted/50"
+            }`}
           onClick={() => onTrendClick(trend.name, category)}
         >
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-start justify-between">
-              <div className="space-y-1 flex-1">
+              <div className="space-y-1.5 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <CategoryIcon className="size-3 text-muted-foreground" />
+                  <CategoryIcon className="size-4 text-muted-foreground" />
                   <h3 className="font-semibold text-foreground text-base">{trend.name}</h3>
-                  <Badge className={`text-xs ${getCategoryColor(category)}`}>{category}</Badge>
+                  <Badge variant="secondary" className={`text-xs ${getCategoryColor(category)}`}>
+                    {category}
+                  </Badge>
                   {trend.confidence && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="outline" className="text-xs font-medium">
                       {trend.confidence}% confidence
                     </Badge>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground leading-snug">{trend.description}</p>
+                <p className="text-sm text-muted-foreground leading-snug">{trend.description}</p>
               </div>
             </div>
 
             {trend.techniques && trend.techniques.length > 0 && (
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground">Techniques:</span>
-                <div className="flex gap-1 flex-wrap">
+                <span className="text-sm font-medium text-muted-foreground">Techniques:</span>
+                <div className="flex gap-1.5 flex-wrap">
                   {trend.techniques.slice(0, 3).map((technique, idx) => (
-                    <Badge key={idx} variant="secondary" className="text-xs py-0 px-1">
+                    <Badge key={idx} variant="secondary" className="text-xs">
                       {technique}
                     </Badge>
                   ))}
                   {trend.techniques.length > 3 && (
-                    <Badge variant="outline" className="text-xs py-0 px-1">
+                    <Badge variant="outline" className="text-xs">
                       +{trend.techniques.length - 3} more
                     </Badge>
                   )}
@@ -231,22 +232,22 @@ export function ComprehensiveTrendsDisplay({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
+                    className="h-auto p-0 text-sm text-muted-foreground hover:text-foreground"
                   >
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       <span>{trend.sources.length} sources</span>
                       {isSourcesExpanded ? (
-                        <ChevronUpIcon className="size-3" />
+                        <ChevronUpIcon className="size-3.5" />
                       ) : (
-                        <ChevronDownIcon className="size-3" />
+                        <ChevronDownIcon className="size-3.5" />
                       )}
                     </div>
                   </Button>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="mt-1">
-                  <div className="flex flex-wrap gap-1">
+                <CollapsibleContent className="mt-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {trend.sources.map((source) => (
-                      <Badge key={source} variant="outline" className="text-xs py-0 px-1">
+                      <Badge key={source} variant="outline" className="text-xs font-medium">
                         {source}
                       </Badge>
                     ))}
@@ -255,35 +256,38 @@ export function ComprehensiveTrendsDisplay({
               </Collapsible>
             )}
 
-            <div className="flex items-center justify-between pt-1">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center gap-4">
                 {trend.growth && (
-                  <div className="flex items-center gap-1">
-                    <TrendingUpIcon className="size-3 text-green-600" />
-                    <span className="text-xs text-green-600 font-medium">+{trend.growth}%</span>
+                  <div className="flex items-center gap-1.5">
+                    <TrendingUpIcon className="size-4 text-green-600" />
+                    <span className="text-sm text-green-600 font-semibold">+{trend.growth}%</span>
                   </div>
                 )}
                 {trend.seasonality && (
-                  <div className="flex items-center gap-1">
-                    <CalendarIcon className="size-3 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">{trend.seasonality}</span>
+                  <div className="flex items-center gap-1.5">
+                    <CalendarIcon className="size-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">{trend.seasonality}</span>
                   </div>
                 )}
               </div>
               <Button
-                onClick={() => handleCurateProducts(trend.name, category)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleCurateProducts(trend.name, category)
+                }}
                 disabled={isCurating}
-                className="bg-black hover:bg-gray-800 text-white h-7 text-xs px-2"
+                className="h-9 text-sm px-3"
                 size="sm"
               >
                 {isCurating ? (
                   <>
-                    <LoaderIcon className="size-3 mr-1 animate-spin" />
+                    <LoaderIcon className="size-4 mr-1.5 animate-spin" />
                     Curating...
                   </>
                 ) : (
                   <>
-                    <ShoppingBagIcon className="size-3 mr-1" />
+                    <ShoppingBagIcon className="size-4 mr-1.5" />
                     Curate Products
                   </>
                 )}
@@ -291,12 +295,12 @@ export function ComprehensiveTrendsDisplay({
             </div>
 
             {isSelected && selectedTrend === trend.name && (
-              <div className="mt-3 p-3 bg-accent/30 rounded-lg border-l-4 border-primary">
+              <div className="mt-4 p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <ShoppingBagIcon className="size-3 text-primary" />
-                  <h4 className="font-medium text-xs">Curated Sephora Products for "{trend.name}"</h4>
+                  <ShoppingBagIcon className="size-4 text-primary" />
+                  <h4 className="font-semibold text-sm">Curated Sephora Products for "{trend.name}"</h4>
                 </div>
-                <div className="text-xs text-muted-foreground mb-2">
+                <div className="text-sm text-muted-foreground mb-3">
                   Products curated specifically for this trend based on techniques, color palette, and style
                   requirements.
                 </div>
@@ -307,7 +311,7 @@ export function ComprehensiveTrendsDisplay({
             )}
           </div>
         </div>
-        {index < totalTrends - 1 && <Separator className="my-2" />}
+        {index < totalTrends - 1 && <Separator className="my-4" />}
       </div>
     )
   }
@@ -393,10 +397,9 @@ The beauty industry continues to evolve rapidly, with consumers increasingly see
 ## Detailed Trend Analysis
 
 ### Makeup Trends
-${
-  data?.trends?.makeup_trends
-    ?.map(
-      (trend) => `
+${data?.trends?.makeup_trends
+        ?.map(
+          (trend) => `
 **${trend.name}**
 ${trend.description}
 
@@ -404,15 +407,14 @@ Key Techniques: ${trend.techniques?.join(", ") || "Various application methods"}
 Confidence Score: ${trend.confidence || 85}%
 Growth Rate: ${trend.growth || 15}%
 `,
-    )
-    .join("\n") || "No makeup trends available"
-}
+        )
+        .join("\n") || "No makeup trends available"
+      }
 
 ### Skincare Trends
-${
-  data?.trends?.skincare_trends
-    ?.map(
-      (trend) => `
+${data?.trends?.skincare_trends
+        ?.map(
+          (trend) => `
 **${trend.name}**
 ${trend.description}
 
@@ -420,15 +422,14 @@ Key Techniques: ${trend.techniques?.join(", ") || "Various application methods"}
 Confidence Score: ${trend.confidence || 85}%
 Growth Rate: ${trend.growth || 15}%
 `,
-    )
-    .join("\n") || "No skincare trends available"
-}
+        )
+        .join("\n") || "No skincare trends available"
+      }
 
 ### Hair Trends
-${
-  data?.trends?.hair_trends
-    ?.map(
-      (trend) => `
+${data?.trends?.hair_trends
+        ?.map(
+          (trend) => `
 **${trend.name}**
 ${trend.description}
 
@@ -436,9 +437,9 @@ Key Techniques: ${trend.techniques?.join(", ") || "Various styling methods"}
 Confidence Score: ${trend.confidence || 85}%
 Growth Rate: ${trend.growth || 15}%
 `,
-    )
-    .join("\n") || "No hair trends available"
-}
+        )
+        .join("\n") || "No hair trends available"
+      }
 
 ## Recommendations
 Based on our analysis, we recommend focusing on trends with high confidence scores and growth rates. Consider seasonal variations and demographic preferences when implementing these trends in product development and marketing strategies.
@@ -450,8 +451,8 @@ This report was generated using advanced AI analysis of social media trends, sea
 
   return (
     <>
-      <Card className="bg-slate-100">
-        <CardHeader className="pb-3">
+      <Card>
+        <CardHeader className="pb-4">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -468,27 +469,27 @@ This report was generated using advanced AI analysis of social media trends, sea
             <Button
               variant="outline"
               size="sm"
-              className="flex items-center gap-2 bg-transparent h-7 text-xs px-2"
+              className="flex items-center gap-2 h-9 text-sm px-3"
               onClick={handleFullReport}
             >
-              <BookOpenIcon className="size-3" />
+              <BookOpenIcon className="size-4" />
               Full Report
             </Button>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2 pt-2">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <div className="flex-1 relative">
-              <SearchIcon className="size-3 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+              <SearchIcon className="size-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search across all beauty trends..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 h-8 text-xs"
+                className="pl-9 h-9 text-sm"
               />
             </div>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[120px] h-8 text-xs">
-                <SortAscIcon className="size-3 mr-1" />
+              <SelectTrigger className="w-[150px] h-9 text-sm">
+                <SortAscIcon className="size-4 mr-1.5" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -502,30 +503,30 @@ This report was generated using advanced AI analysis of social media trends, sea
 
         <CardContent className="pt-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 h-8">
-              <TabsTrigger value="makeup" className="flex items-center gap-1 text-xs">
-                <PaletteIcon className="size-3" />
+            <TabsList className="grid w-full grid-cols-3 h-10">
+              <TabsTrigger value="makeup" className="flex items-center gap-1.5 text-sm">
+                <PaletteIcon className="size-4" />
                 Makeup ({data?.trends?.makeup_trends?.length || 0})
               </TabsTrigger>
-              <TabsTrigger value="skincare" className="flex items-center gap-1 text-xs">
-                <HeartIcon className="size-3" />
+              <TabsTrigger value="skincare" className="flex items-center gap-1.5 text-sm">
+                <HeartIcon className="size-4" />
                 Skincare ({data?.trends?.skincare_trends?.length || 0})
               </TabsTrigger>
-              <TabsTrigger value="hair" className="flex items-center gap-1 text-xs">
-                <ScissorsIcon className="size-3" />
+              <TabsTrigger value="hair" className="flex items-center gap-1.5 text-sm">
+                <ScissorsIcon className="size-4" />
                 Hair ({data?.trends?.hair_trends?.length || 0})
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="makeup" className="mt-3">
+            <TabsContent value="makeup" className="mt-4">
               {renderTrendsSection(data?.trends?.makeup_trends || [], "makeup", "Makeup")}
             </TabsContent>
 
-            <TabsContent value="skincare" className="mt-3">
+            <TabsContent value="skincare" className="mt-4">
               {renderTrendsSection(data?.trends?.skincare_trends || [], "skincare", "Skincare")}
             </TabsContent>
 
-            <TabsContent value="hair" className="mt-3">
+            <TabsContent value="hair" className="mt-4">
               {renderTrendsSection(data?.trends?.hair_trends || [], "hair", "Hair")}
             </TabsContent>
           </Tabs>
@@ -544,12 +545,12 @@ This report was generated using advanced AI analysis of social media trends, sea
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-2">
+          <div className="mt-4">
             {fullReportLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="text-center space-y-3">
-                  <LoaderIcon className="size-6 animate-spin mx-auto text-primary" />
-                  <p className="text-muted-foreground text-sm">Generating comprehensive report...</p>
+              <div className="flex items-center justify-center py-10">
+                <div className="text-center space-y-4">
+                  <LoaderIcon className="size-8 animate-spin mx-auto text-primary" />
+                  <p className="text-muted-foreground text-base">Generating comprehensive report...</p>
                 </div>
               </div>
             ) : (
@@ -559,8 +560,8 @@ This report was generated using advanced AI analysis of social media trends, sea
             )}
           </div>
 
-          <div className="flex justify-end gap-2 mt-4 pt-3 border-t">
-            <Button variant="outline" onClick={() => setShowFullReport(false)} className="h-7 text-xs px-3">
+          <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
+            <Button variant="outline" onClick={() => setShowFullReport(false)} className="h-9 text-sm px-4">
               Close
             </Button>
             <Button
@@ -576,9 +577,9 @@ This report was generated using advanced AI analysis of social media trends, sea
                 URL.revokeObjectURL(url)
               }}
               disabled={fullReportLoading}
-              className="bg-black hover:bg-gray-800 text-white h-7 text-xs px-3"
+              className="h-9 text-sm px-4"
             >
-              <BookOpenIcon className="size-3 mr-1" />
+              <BookOpenIcon className="size-4 mr-1.5" />
               Download Report
             </Button>
           </div>

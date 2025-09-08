@@ -12,8 +12,8 @@ from pydantic import BaseModel, Field
 from google.genai import types
 
 
-from utils.config import config
-from utils.callbacks import (
+from src.sephora_trend_agent.config import config
+from src.sephora_trend_agent.callbacks import (
     collect_research_sources_callback,
     # citation_replacement_callback,
 )
@@ -26,6 +26,7 @@ logging.basicConfig(
 class TrendItem(BaseModel):
     name: str = Field(description="The name of the trend.")
     description: str = Field(description="A detailed description of the trend.")
+    techniques: list[str] = Field(description="A list of techniques related to the trend.")
 
 
 class TrendCategory(BaseModel):
@@ -52,7 +53,7 @@ trend_research_agent = LlmAgent(
     name="sephora_trend_research_agent",
     description="Identifies up-and-coming beauty and style trends using Google Search with source attribution and timestamps.",
     planner=BuiltInPlanner(
-        thinking_config=genai_types.ThinkingConfig(include_thoughts=True)
+        thinking_config=genai_types.ThinkingConfig(include_thoughts=False)
     ),
     instruction="""
     You are a Sephora Trend Research Agent, an expert in discovering the latest beauty, skincare, hair, and makeup trends from the internet's most dynamic sources. Your goal is to act like a trend-spotter, focusing on what's new and exciting on social media.
@@ -107,3 +108,104 @@ root_agent = SequentialAgent(
     description="A sequential agent that uses the trend research agent to find trends and the output composer agent to compose the output into a pydantic model.",
     sub_agents=[trend_research_agent, output_composer_agent],
 )
+
+if __name__ == "__main__":
+    import asyncio
+    import uuid
+
+    from google.adk.runners import Runner
+    from google.adk.sessions import InMemorySessionService
+
+    APP_NAME = "sephora_trend_agent"
+    USER_ID = "user1"
+    SESSION_ID = str(uuid.uuid4())
+
+    # Create session service and session
+    session_service = InMemorySessionService()
+
+    # Create runner with the session service
+    runner = Runner(
+        agent=root_agent, session_service=session_service, app_name=APP_NAME
+    )
+
+    async def call_agent_async(query: str, runner, user_id, session_id):
+        """Sends a query to the agent and prints the final response."""
+        print(f"\n>>> User Query: {query}")
+        session = await session_service.create_session(
+            app_name=APP_NAME,
+            user_id=USER_ID,
+            session_id=SESSION_ID,
+        )
+        print(
+            f"Session created: App='{APP_NAME}', User='{USER_ID}', Session='{SESSION_ID}'"
+        )
+
+        # Prepare the user's message in ADK format
+        content = types.Content(role="user", parts=[types.Part(text=query)])
+
+        # Key Concept: run_async executes the agent logic and yields Events.
+        # We iterate through events to find the final answer.
+        async for event in runner.run_async(
+            user_id=user_id, session_id=session_id, new_message=content
+        ):
+            # You can uncomment the line below to see *all* events during execution
+            print(
+                f"  [Event] Author: {event.author}, Type: {type(event).__name__}, Final: {event.is_final_response()}"
+            )
+
+            # Key Concept: Only check for final response from the root agent
+            if event.is_final_response() and event.author == "output_composer_agent":
+                # Get the final session state to extract the structured output
+                final_session = await session_service.get_session(
+                    app_name=APP_NAME,
+                    user_id=USER_ID,
+                    session_id=SESSION_ID,
+                )
+
+                # Check for the final output in session state
+                final_output = None
+                if final_session and final_session.state:
+                    # Check for the final output from the card composer
+                    final_output = final_session.state.get("sephora_trends_report")
+
+                    print(final_output)
+
+                    citations = final_session.state.get("sephora_trend_research_findings_with_citations")
+                    print(citations)
+
+                # if final_output:
+                #     print("\n" + "=" * 80)
+                #     print("FINAL SEPHORA TRENDS REPORT OUTPUT")
+                #     print("=" * 80)
+
+                #     # Pretty print the structured output
+                #     import json
+
+                #     try:
+                #         if isinstance(final_output, str):
+                #             # Try to parse as JSON if it's a string
+                #             parsed_output = json.loads(final_output)
+                #         else:
+                #             parsed_output = final_output
+
+                #         print(json.dumps(parsed_output, indent=2))
+                #     except:
+                #         # If not JSON, print as is
+                #         print(final_output)
+
+                #     print("=" * 80)
+                # else:
+                #     print("No final output found in session state.")
+                #     if event.content and event.content.parts:
+                #         print(f"Event content: {event.content.parts[0].text}")
+                # break
+
+    async def run_conversation():
+        await call_agent_async(
+            query="""start""",
+            runner=runner,
+            user_id=USER_ID,
+            session_id=SESSION_ID,
+        )
+
+    asyncio.run(run_conversation())

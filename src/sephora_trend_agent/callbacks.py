@@ -1,10 +1,88 @@
 import re
 import logging
+from difflib import SequenceMatcher
 
 from google.adk.agents.callback_context import CallbackContext
 from google.genai import types as genai_types
 
-def collect_research_sources_callback(callback_context: CallbackContext) -> None:
+
+def add_citations_to_report(report: str, sources: dict) -> str:
+    """Add citation tags to the report based on supported claims from sources.
+
+    Args:
+        report: The research report text
+        sources: Dictionary of sources with supported claims
+
+    Returns:
+        Report with citation tags added
+    """
+    # Create a list of all supported claims with their source IDs
+    claims_with_sources = []
+    for source_id, source_info in sources.items():
+        for claim in source_info.get("supported_claims", []):
+            text_segment = claim.get("text_segment", "").strip()
+            if text_segment:
+                # Clean up the text segment for matching
+                clean_text = re.sub(
+                    r"\*+([^*]+)\*+", r"\1", text_segment
+                )  # Remove markdown bold
+                clean_text = re.sub(r"\s+", " ", clean_text)  # Normalize whitespace
+                # Only include claims that are substantial (more than 30 characters)
+                if len(clean_text) > 30:
+                    claims_with_sources.append((clean_text, source_id))
+
+    # Sort by length (longest first) to avoid partial matches
+    claims_with_sources.sort(key=lambda x: len(x[0]), reverse=True)
+
+    result = report
+    used_positions = set()
+
+    for claim_text, source_id in claims_with_sources:
+        if not claim_text:
+            continue
+
+        # Try exact matching first
+        start_pos = 0
+        while True:
+            # Find the next occurrence of the claim text
+            pos = result.lower().find(claim_text.lower(), start_pos)
+            if pos == -1:
+                break
+
+            # Check if this position is already used
+            if any(start <= pos < start + len(claim_text) for start in used_positions):
+                start_pos = pos + 1
+                continue
+
+            # Check if it's at a word boundary
+            is_word_boundary = (
+                pos == 0
+                or result[pos - 1] in " \n\t.,;:!?-"
+                or result[pos - 1] in "()[]{}"
+            )
+
+            if is_word_boundary:
+                # Add citation tag after the matched text
+                citation_tag = f' <cite source="{source_id}"/>'
+                result = (
+                    result[: pos + len(claim_text)]
+                    + citation_tag
+                    + result[pos + len(claim_text) :]
+                )
+
+                # Mark this position as used
+                used_positions.add(pos)
+                used_positions.add(pos + len(claim_text) + len(citation_tag))
+                break
+            else:
+                start_pos = pos + 1
+
+    return result
+
+
+def collect_research_sources_callback(
+    callback_context: CallbackContext,
+) -> genai_types.Content:
     """Collects and organizes web-based research sources and their supported claims from agent events.
 
     This function processes the agent's `session.events` to extract web source details (URLs,
@@ -68,7 +146,11 @@ def collect_research_sources_callback(callback_context: CallbackContext) -> None
 
     if not research_report:
         logging.warning("No research report found in callback context")
-        return
+        return genai_types.Content(parts=[genai_types.Part(text="")])
+
+    # First, add citation tags to the report based on supported claims
+    report_with_citations = add_citations_to_report(research_report, sources)
+
     def tag_replacer(match: re.Match) -> str:
         short_id = match.group(1)
         if not (source_info := sources.get(short_id)):
@@ -80,12 +162,15 @@ def collect_research_sources_callback(callback_context: CallbackContext) -> None
     processed_report = re.sub(
         r'<cite\s+source\s*=\s*["\']?\s*(src-\d+)\s*["\']?\s*/>',
         tag_replacer,
-        research_report,
+        report_with_citations,
     )
     processed_report = re.sub(r"\s+([.,;:])", r"\1", processed_report)
-    callback_context.state["sephora_trend_research_findings_with_citations"] = processed_report
+    callback_context.state["sephora_trend_research_findings_with_citations"] = (
+        processed_report
+    )
 
     return genai_types.Content(parts=[genai_types.Part(text=processed_report)])
+
 
 # def citation_replacement_callback(
 #     callback_context: CallbackContext,

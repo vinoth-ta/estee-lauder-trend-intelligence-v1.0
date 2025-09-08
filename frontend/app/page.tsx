@@ -39,7 +39,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { TrendAnalysisInterface } from "@/components/trend-analysis-interface"
 import { ComprehensiveTrendsDisplay } from "@/components/comprehensive-trends-display"
-import { sephoraAPI, withRetry, type ProductData, type AnalysisConfig } from "@/lib/api"
+import { SephoraTrendsDisplay } from "@/components/sephora-trends-display"
+import { sephoraAPI, withRetry, type ProductData, type AnalysisConfig, type SephoraTrendAgentResponse } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 
 interface AnalysisProgress {
@@ -115,6 +116,7 @@ export default function SephoraTrendAnalyzer() {
   const [isLoadingProducts, setIsLoadingProducts] = useState(false)
   const [products, setProducts] = useState<ProductData[]>([])
   const [trendsData, setTrendsData] = useState<TrendsResponse | null>(null)
+  const [sephoraTrendData, setSephoraTrendData] = useState<SephoraTrendAgentResponse | null>(null)
   const [currentAnalysisId, setCurrentAnalysisId] = useState<string | null>(null)
   const { toast } = useToast()
 
@@ -264,69 +266,172 @@ export default function SephoraTrendAnalyzer() {
     setIsAnalyzing(true)
     setAnalysisComplete(false)
     setTrendsData(null)
+    setSephoraTrendData(null)
     setCurrentAnalysisId(null)
 
     const stages = [
       { stage: "Initializing Analysis", progress: 10, message: "Setting up data collection pipelines..." },
-      { stage: "Collecting Data", progress: 30, message: "Gathering data from internet sources..." },
-      { stage: "Processing Content", progress: 50, message: "Analyzing content with AI models..." },
-      { stage: "Identifying Trends", progress: 70, message: "Detecting emerging patterns and trends..." },
-      { stage: "Calculating Confidence", progress: 85, message: "Scoring trend reliability and growth..." },
+      { stage: "Creating Session", progress: 25, message: "Establishing connection with AI agent..." },
+      { stage: "Collecting Data", progress: 40, message: "Gathering data from internet sources..." },
+      { stage: "Processing Content", progress: 60, message: "Analyzing content with AI models..." },
+      { stage: "Identifying Trends", progress: 80, message: "Detecting emerging patterns and trends..." },
       { stage: "Finalizing Report", progress: 100, message: "Generating comprehensive trend analysis..." },
     ]
 
     try {
-      const analysisRequest = await withRetry(() =>
-        sephoraAPI.startTrendAnalysis({
-          timeframe: config.timeframe,
-          categories: config.categories,
-          region: config.region,
+      // Step 1: Create session with sephora trend agent
+      setAnalysisProgress(stages[0])
+
+      // Generate unique session ID
+      const userId = "user"
+      const sessionId = `sephora-session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+
+      const sessionResponse = await fetch("/api/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          appName: "sephora_trend_agent",
+          userId,
+          sessionId,
         }),
-      )
+      })
 
-      setCurrentAnalysisId(analysisRequest.analysis_id)
-
-      let analysisComplete = false
-      let stageIndex = 0
-
-      while (!analysisComplete && stageIndex < stages.length) {
-        setAnalysisProgress(stages[stageIndex])
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        try {
-          const status = await sephoraAPI.getTrendAnalysisStatus(analysisRequest.analysis_id)
-
-          if (status.status === "completed") {
-            setTrendsData({
-              report_summary: status.report_summary || mockTrendsResponse.report_summary,
-              trends: {
-                makeup_trends: status.trends.filter((t: any) => t.category === "makeup"),
-                skincare_trends: status.trends.filter((t: any) => t.category === "skincare"),
-                hair_trends: status.trends.filter((t: any) => t.category === "hairstyle"),
-              },
-            })
-            analysisComplete = true
-            toast({
-              title: "Analysis Complete",
-              description: `Found ${status.trends.length} trending patterns across ${status.metadata.total_sources_analyzed} sources.`,
-            })
-          } else if (status.status === "failed") {
-            throw new Error("Analysis failed on server")
-          }
-        } catch (error) {
-          console.warn("API polling failed, continuing with mock data:", error)
-          break
-        }
-
-        stageIndex++
+      if (!sessionResponse.ok) {
+        throw new Error(`Failed to create session: ${sessionResponse.status}`)
       }
 
-      if (!analysisComplete) {
-        for (let i = stageIndex; i < stages.length; i++) {
-          setAnalysisProgress(stages[i])
-          await new Promise((resolve) => setTimeout(resolve, 800))
-        }
+      const sessionData = await sessionResponse.json()
+      console.log("Session created:", sessionData)
 
+      setAnalysisProgress(stages[1])
+
+      // Step 2: Start SSE connection with the agent
+      setAnalysisProgress(stages[2])
+
+      const endpoint = "/api/run_sse"
+      const headers: Record<string, string> = {
+        Accept: "text/event-stream",
+        "Content-Type": "application/json"
+      }
+
+      // Create AbortController for timeout handling
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30 * 60 * 1000) // 30 minutes timeout
+
+      let response: Response
+      try {
+        response = await fetch(endpoint, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            appName: "sephora_trend_agent",
+            userId,
+            sessionId,
+            newMessage: {
+              role: "user",
+              parts: [
+                {
+                  text: "begin",
+                },
+              ],
+            },
+          }),
+          signal: controller.signal,
+        })
+
+        clearTimeout(timeoutId) // Clear timeout if request succeeds
+      } catch (error: any) {
+        clearTimeout(timeoutId)
+        if (error.name === 'AbortError') {
+          throw new Error("Request timeout after 30 minutes")
+        }
+        throw error
+      }
+
+      if (!response.ok) {
+        throw new Error(`SSE request failed: ${response.status}`)
+      }
+
+      // Process SSE stream
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ""
+      let currentStageIndex = 2
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || ""
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6))
+                console.log("Received SSE data:", data)
+
+                // Update progress based on received data
+                if (currentStageIndex < stages.length - 1) {
+                  currentStageIndex++
+                  setAnalysisProgress(stages[currentStageIndex])
+                }
+
+                // Check if we have trend data
+                if (data.content?.parts?.[0]?.text) {
+                  const responseText = data.content.parts[0].text
+
+                  // Try to parse trend data from the response
+                  try {
+                    // Look for JSON in the response
+                    const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+                    if (jsonMatch) {
+                      const trendData = JSON.parse(jsonMatch[0])
+
+                      // Check if this is the sephora trend agent response format
+                      if (trendData.report_summary && trendData.trends && trendData.trends.makeup_trends && trendData.trends.skincare_trends && trendData.trends.hair_trends) {
+                        // Transform the response to match our expected format
+                        const sephoraResponse: SephoraTrendAgentResponse = {
+                          thinking: "Analysis completed successfully",
+                          report: {
+                            report_summary: trendData.report_summary,
+                            trends: trendData.trends
+                          }
+                        }
+                        setSephoraTrendData(sephoraResponse)
+                        setAnalysisComplete(true)
+                        toast({
+                          title: "Analysis Complete",
+                          description: "Successfully analyzed beauty trends using Sephora Trend Agent.",
+                        })
+                        break
+                      } else {
+                        // Fallback to old format
+                        setTrendsData(trendData)
+                        setAnalysisComplete(true)
+                        toast({
+                          title: "Analysis Complete",
+                          description: "Successfully analyzed beauty trends using AI agent.",
+                        })
+                        break
+                      }
+                    }
+                  } catch (parseError) {
+                    console.log("Could not parse trend data from response:", parseError)
+                  }
+                }
+              } catch (parseError) {
+                console.log("Could not parse SSE data:", parseError)
+              }
+            }
+          }
+        }
+      }
+
+      // If no trend data was received, use mock data
+      if (!trendsData) {
         const filteredResponse = {
           ...mockTrendsResponse,
           trends: {
@@ -348,8 +453,9 @@ export default function SephoraTrendAnalyzer() {
           variant: "default",
         })
       }
+
     } catch (error) {
-      console.warn("API unavailable, using mock data:", error)
+      console.warn("Sephora trend agent unavailable, using mock data:", error)
 
       for (const stage of stages) {
         setAnalysisProgress(stage)
@@ -360,7 +466,7 @@ export default function SephoraTrendAnalyzer() {
 
       toast({
         title: "Demo Mode",
-        description: "API unavailable. Using sample data for demonstration.",
+        description: "Sephora trend agent unavailable. Using sample data for demonstration.",
         variant: "default",
       })
     }
@@ -392,8 +498,8 @@ export default function SephoraTrendAnalyzer() {
           productContainer.innerHTML = `
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               ${curationResponse.products
-                .map(
-                  (product) => `
+              .map(
+                (product) => `
                 <div class="bg-background border rounded-lg p-3 hover:shadow-md transition-shadow">
                   <div class="aspect-square bg-muted rounded-md mb-2 overflow-hidden">
                     <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover" />
@@ -419,8 +525,8 @@ export default function SephoraTrendAnalyzer() {
                   </div>
                 </div>
               `,
-                )
-                .join("")}
+              )
+              .join("")}
             </div>
           `
         }
@@ -492,8 +598,8 @@ export default function SephoraTrendAnalyzer() {
           productContainer.innerHTML = `
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               ${mockProducts
-                .map(
-                  (product) => `
+              .map(
+                (product) => `
                 <div class="bg-background border rounded-lg p-3 hover:shadow-md transition-shadow">
                   <div class="aspect-square bg-muted rounded-md mb-2 overflow-hidden">
                     <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover" />
@@ -519,8 +625,8 @@ export default function SephoraTrendAnalyzer() {
                   </div>
                 </div>
               `,
-                )
-                .join("")}
+              )
+              .join("")}
             </div>
           `
         }
@@ -541,6 +647,7 @@ export default function SephoraTrendAnalyzer() {
   const handleReset = () => {
     setAnalysisComplete(false)
     setTrendsData(null)
+    setSephoraTrendData(null)
     setSelectedTrend(null)
     setProducts([])
     setAnalysisProgress(undefined)
@@ -615,12 +722,15 @@ export default function SephoraTrendAnalyzer() {
           <SidebarHeader className="border-b border-sidebar-border bg-sidebar">
             <div className="flex items-center gap-2 px-3 py-4">
               <div className="flex size-8 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-black/5">
-                <svg viewBox="0 0 100 100" className="size-5 text-black" fill="currentColor">
-                  <path d="M50 10 L20 25 L20 75 C20 85 35 95 50 95 C65 95 80 85 80 75 L80 25 Z" />
-                  <circle cx="50" cy="50" r="15" fill="white" />
-                  <text x="50" y="55" textAnchor="middle" fontSize="12" fontWeight="bold" fill="black">
-                    S
-                  </text>
+                <svg
+                  role="img"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="size-5 text-black"
+                  fill="currentColor"
+                >
+                  <title>Sephora</title>
+                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12c3.226 0 6.142-1.253 8.318-3.321L12 12V0zm0 12l8.318 8.679A11.94 11.94 0 0 0 24 12c0-6.627-5.373-12-12-12v12z" />
                 </svg>
               </div>
               <div className="flex flex-col min-w-0 flex-1">
@@ -630,7 +740,7 @@ export default function SephoraTrendAnalyzer() {
             </div>
           </SidebarHeader>
 
-          <SidebarContent className="bg-gradient-to-b from-black via-gray-900 to-black bg-slate-700">
+          <SidebarContent>
             <div className="px-2 py-3">
               <SidebarMenu className="space-y-1">
                 {sidebarItems.map((item) => (
@@ -654,7 +764,7 @@ export default function SephoraTrendAnalyzer() {
         </Sidebar>
 
         <SidebarInset className="flex-1 min-w-0 ml-0">
-          <header className="flex h-14 shrink-0 items-center justify-between border-b backdrop-blur-sm sticky top-0 z-50 px-4 bg-fuchsia-300">
+          <header className="flex h-14 shrink-0 items-center justify-between border-b backdrop-blur-sm sticky top-0 z-50 px-4 bg-background/80">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="h-4" />
@@ -725,9 +835,9 @@ export default function SephoraTrendAnalyzer() {
             </div>
           </header>
 
-          <main className="flex-1 p-5 bg-gradient-to-br from-background via-background to-muted/10">
+          <main className="flex-1 p-6">
             {activeTab === "trend-analyzer" && (
-              <div className="space-y-8 max-w-7xl mx-auto">
+              <div className="space-y-6 max-w-7xl mx-auto">
                 <TrendAnalysisInterface
                   onRunAnalysis={handleRunAnalysis}
                   isAnalyzing={isAnalyzing}
@@ -736,12 +846,19 @@ export default function SephoraTrendAnalyzer() {
                   onReset={handleReset}
                 />
 
-                <ComprehensiveTrendsDisplay
-                  data={trendsData}
-                  onTrendClick={handleTrendClick}
-                  selectedTrend={selectedTrend}
-                  isLoading={isAnalyzing}
-                />
+                {sephoraTrendData ? (
+                  <SephoraTrendsDisplay
+                    data={sephoraTrendData}
+                    isLoading={isAnalyzing}
+                  />
+                ) : (
+                  <ComprehensiveTrendsDisplay
+                    data={trendsData}
+                    onTrendClick={handleTrendClick}
+                    selectedTrend={selectedTrend}
+                    isLoading={isAnalyzing}
+                  />
+                )}
               </div>
             )}
 

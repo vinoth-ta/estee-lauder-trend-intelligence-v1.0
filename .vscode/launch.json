@@ -1,0 +1,48 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Sephora Trend Agent",
+            "type": "python",
+            "request": "launch",
+            "module": "src.sephora_trend_agent.agent",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "LOG_LEVEL": "DEBUG",
+                "GOOGLE_GENAI_USE_VERTEXAI": "True"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "python": "${workspaceFolder}/.venv/bin/python"
+        },
+        {
+            "name": "Debug Sephora Trend Agent (INFO)",
+            "type": "python",
+            "request": "launch",
+            "module": "src.sephora_trend_agent.agent",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "LOG_LEVEL": "INFO",
+                "GOOGLE_GENAI_USE_VERTEXAI": "True"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "python": "${workspaceFolder}/.venv/bin/python"
+        },
+        {
+            "name": "Debug Sephora Trend Agent (uv)",
+            "type": "python",
+            "request": "launch",
+            "module": "src.sephora_trend_agent.agent",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "LOG_LEVEL": "DEBUG",
+                "GOOGLE_GENAI_USE_VERTEXAI": "True"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "preLaunchTask": "uv-sync"
+        }
+    ]
+}
