@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Modern, elegant Sephora-inspired theme */
+  /* Modern, elegant Sephora-inspired pink theme */
   --background: oklch(1 0 0);
   /* White */
   --foreground: oklch(0 0 0);
@@ -21,34 +21,34 @@
   --secondary-foreground: oklch(0 0 0);
   --muted: oklch(0.96 0 0);
   --muted-foreground: oklch(0.45 0 0);
-  --accent: oklch(0.6 0.24 15);
-  /* Sephora Red as accent */
+  --accent: oklch(0.65 0.15 320);
+  /* Sephora Pink as accent */
   --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.6 0.24 15);
+  --destructive: oklch(0.65 0.15 320);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.92 0 0);
   --input: oklch(0.92 0 0);
-  --ring: oklch(0.6 0.24 15 / 0.5);
-  --chart-1: oklch(0.6 0.24 15);
+  --ring: oklch(0.65 0.15 320 / 0.5);
+  --chart-1: oklch(0.65 0.15 320);
   --chart-2: oklch(0 0 0);
   --chart-3: oklch(0.75 0 0);
   --chart-4: oklch(0.35 0 0);
   --chart-5: oklch(0.65 0 0);
   --radius: 0.5rem;
   /* Slightly smaller radius for a sharper look */
-  --sidebar: oklch(0 0 0);
-  /* Black sidebar */
+  --sidebar: oklch(0.05 0 0);
+  /* Dark sidebar */
   --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.6 0.24 15);
+  --sidebar-primary: oklch(0.65 0.15 320);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.15 0 0);
+  --sidebar-accent: oklch(0.1 0 0);
   --sidebar-accent-foreground: oklch(0.98 0 0);
   --sidebar-border: oklch(0.15 0 0);
-  --sidebar-ring: oklch(0.6 0.24 15 / 0.5);
+  --sidebar-ring: oklch(0.65 0.15 320 / 0.5);
 }
 
 .dark {
-  /* Dark mode with inverted Sephora colors */
+  /* Dark mode with inverted Sephora pink colors */
   --background: oklch(0.05 0 0);
   --foreground: oklch(0.95 0 0);
   --card: oklch(0.1 0 0);
@@ -61,27 +61,27 @@
   --secondary-foreground: oklch(0.95 0 0);
   --muted: oklch(0.15 0 0);
   --muted-foreground: oklch(0.65 0 0);
-  --accent: oklch(0.6 0.24 15);
-  /* Sephora Red as accent */
+  --accent: oklch(0.65 0.15 320);
+  /* Sephora Pink as accent */
   --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.6 0.24 15);
+  --destructive: oklch(0.65 0.15 320);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.15 0 0);
   --input: oklch(0.15 0 0);
-  --ring: oklch(0.6 0.24 15 / 0.5);
-  --chart-1: oklch(0.6 0.24 15);
+  --ring: oklch(0.65 0.15 320 / 0.5);
+  --chart-1: oklch(0.65 0.15 320);
   --chart-2: oklch(0.85 0 0);
   --chart-3: oklch(0.75 0 0);
   --chart-4: oklch(0.65 0 0);
   --chart-5: oklch(0.55 0 0);
   --sidebar: oklch(0 0 0);
   --sidebar-foreground: oklch(0.95 0 0);
-  --sidebar-primary: oklch(0.6 0.24 15);
+  --sidebar-primary: oklch(0.65 0.15 320);
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.1 0 0);
   --sidebar-accent-foreground: oklch(0.95 0 0);
   --sidebar-border: oklch(0.1 0 0);
-  --sidebar-ring: oklch(0.6 0.24 15 / 0.5);
+  --sidebar-ring: oklch(0.65 0.15 320 / 0.5);
 }
 
 @theme inline {
@@ -132,5 +132,80 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Sephora-inspired typography */
+  .sephora-font {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  .sephora-title {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+  }
+
+  /* Enhanced sidebar animations */
+  .sidebar-item {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sidebar-item:hover {
+    transform: translateX(2px);
+  }
+
+  .sidebar-item[data-active="true"] {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+  }
+
+  /* Smooth header transitions */
+  .header-icon {
+    transition: all 0.2s ease-in-out;
+  }
+
+  .header-icon:hover {
+    transform: scale(1.05);
+  }
+}
+
+/* Custom scrollbar styles */
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-full;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+    border: 1px solid transparent;
+    background-clip: content-box;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+
+  .scrollbar-track-gray-100::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+
+  .scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
+    @apply bg-gray-300;
+  }
+
+  .hover\:scrollbar-thumb-gray-400:hover::-webkit-scrollbar-thumb {
+    @apply bg-gray-400;
   }
 }

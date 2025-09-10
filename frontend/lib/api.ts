@@ -22,6 +22,10 @@ export interface TrendItem {
   name: string
   description: string
   techniques: string[]
+  popularity?: string
+  difficulty?: string
+  key_products?: string[]
+  target_demographic?: string
 }
 
 export interface TrendCategory {
@@ -39,6 +43,77 @@ export interface SephoraTrendsReport {
 export interface SephoraTrendAgentResponse {
   thinking: string
   report: SephoraTrendsReport
+}
+
+// Interface for research findings with citations
+export interface ResearchFindingsData {
+  content: string
+  sources: { [key: string]: Source }
+  url_to_short_id: { [key: string]: string }
+}
+
+export interface Source {
+  short_id: string
+  title: string
+  url: string
+  domain: string
+  supported_claims: Array<{
+    text_segment: string
+    confidence: number
+  }>
+}
+
+// Interface for structured trends data from output_composer_agent
+export interface StructuredTrendsData {
+  report_summary: string
+  trends: TrendCategory
+}
+
+// Interface for SSE response data
+export interface SSEResponseData {
+  content?: {
+    parts: Array<{
+      text: string
+    }>
+    role: string
+  }
+  groundingMetadata?: {
+    groundingChunks: Array<{
+      web: {
+        domain: string
+        title: string
+        uri: string
+      }
+    }>
+    groundingSupports: Array<{
+      groundingChunkIndices: number[]
+      segment: {
+        endIndex: number
+        startIndex: number
+        text: string
+      }
+    }>
+    retrievalMetadata: any
+    searchEntryPoint: any
+    webSearchQueries: string[]
+  }
+  finishReason?: string
+  usageMetadata?: any
+  invocationId?: string
+  author?: string
+  actions?: {
+    stateDelta?: {
+      sephora_trend_research_findings?: string
+      sephora_trend_research_findings_with_citations?: string
+      sephora_trends_report?: StructuredTrendsData
+      sources?: { [key: string]: Source }
+      url_to_short_id?: { [key: string]: string }
+    }
+    artifactDelta?: any
+    requestedAuthConfigs?: any
+  }
+  id?: string
+  timestamp?: number
 }
 
 export interface ProductCurationRequest {

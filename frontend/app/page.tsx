@@ -11,6 +11,31 @@ import {
   UserIcon,
   SettingsIcon,
   HelpCircleIcon,
+  HomeIcon,
+  PackageIcon,
+  UsersIcon,
+  ShoppingCartIcon,
+  HeartIcon,
+  StarIcon,
+  ClockIcon,
+  BookmarkIcon,
+  PlusIcon,
+  FileTextIcon,
+  TargetIcon,
+  MegaphoneIcon,
+  CalendarIcon,
+  FilterIcon,
+  DownloadIcon,
+  UploadIcon,
+  ZapIcon,
+  AwardIcon,
+  TrendingDownIcon,
+  ActivityIcon,
+  GlobeIcon,
+  CameraIcon,
+  ScissorsIcon,
+  SparkleIcon,
+  Wand2Icon,
 } from "lucide-react"
 import {
   SidebarProvider,
@@ -22,6 +47,11 @@ import {
   SidebarMenuButton,
   SidebarInset,
   SidebarTrigger,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarSeparator,
+  SidebarFooter,
 } from "@/components/ui/sidebar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -40,8 +70,13 @@ import {
 import { TrendAnalysisInterface } from "@/components/trend-analysis-interface"
 import { ComprehensiveTrendsDisplay } from "@/components/comprehensive-trends-display"
 import { SephoraTrendsDisplay } from "@/components/sephora-trends-display"
-import { sephoraAPI, withRetry, type ProductData, type AnalysisConfig, type SephoraTrendAgentResponse } from "@/lib/api"
+import { ResearchFindingsDisplay } from "@/components/research-findings-display"
+import { EnhancedTrendsDisplay } from "@/components/enhanced-trends-display"
+import { TrendFocusedDisplay } from "@/components/trend-focused-display"
+import { AITrendApplication } from "@/components/ai-trend-application"
+import { sephoraAPI, withRetry, type ProductData, type AnalysisConfig, type SephoraTrendAgentResponse, type ResearchFindingsData, type StructuredTrendsData, type SSEResponseData } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
+import { saveTrendsToStorage } from "@/lib/trend-storage"
 
 interface AnalysisProgress {
   stage: string
@@ -117,7 +152,10 @@ export default function SephoraTrendAnalyzer() {
   const [products, setProducts] = useState<ProductData[]>([])
   const [trendsData, setTrendsData] = useState<TrendsResponse | null>(null)
   const [sephoraTrendData, setSephoraTrendData] = useState<SephoraTrendAgentResponse | null>(null)
+  const [researchFindingsData, setResearchFindingsData] = useState<ResearchFindingsData | null>(null)
+  const [structuredTrendsData, setStructuredTrendsData] = useState<StructuredTrendsData | null>(null)
   const [currentAnalysisId, setCurrentAnalysisId] = useState<string | null>(null)
+  const [analysisPhase, setAnalysisPhase] = useState<'research' | 'structured' | 'complete'>('research')
   const { toast } = useToast()
 
   const mockTrendsResponse: TrendsResponse = {
@@ -267,7 +305,10 @@ export default function SephoraTrendAnalyzer() {
     setAnalysisComplete(false)
     setTrendsData(null)
     setSephoraTrendData(null)
+    setResearchFindingsData(null)
+    setStructuredTrendsData(null)
     setCurrentAnalysisId(null)
+    setAnalysisPhase('research')
 
     const stages = [
       { stage: "Initializing Analysis", progress: 10, message: "Setting up data collection pipelines..." },
@@ -370,7 +411,7 @@ export default function SephoraTrendAnalyzer() {
           for (const line of lines) {
             if (line.startsWith('data: ')) {
               try {
-                const data = JSON.parse(line.slice(6))
+                const data: SSEResponseData = JSON.parse(line.slice(6))
                 console.log("Received SSE data:", data)
 
                 // Update progress based on received data
@@ -379,7 +420,44 @@ export default function SephoraTrendAnalyzer() {
                   setAnalysisProgress(stages[currentStageIndex])
                 }
 
-                // Check if we have trend data
+                // Handle different types of responses based on author
+                if (data.author === 'sephora_trend_research_agent') {
+                  // Handle research findings with citations
+                  if (data.actions?.stateDelta) {
+                    const stateDelta = data.actions.stateDelta
+
+                    // Check for research findings with citations
+                    if (stateDelta.sephora_trend_research_findings_with_citations && stateDelta.sources && stateDelta.url_to_short_id) {
+                      const researchData: ResearchFindingsData = {
+                        content: stateDelta.sephora_trend_research_findings_with_citations,
+                        sources: stateDelta.sources,
+                        url_to_short_id: stateDelta.url_to_short_id
+                      }
+                      setResearchFindingsData(researchData)
+                      setAnalysisPhase('structured')
+                      toast({
+                        title: "Research Complete",
+                        description: "Research findings with citations have been gathered.",
+                      })
+                    }
+                  }
+                } else if (data.author === 'output_composer_agent') {
+                  // Handle structured trends data
+                  if (data.actions?.stateDelta?.sephora_trends_report) {
+                    const trendsData = data.actions.stateDelta.sephora_trends_report
+                    setStructuredTrendsData(trendsData)
+                    saveTrendsToStorage(trendsData)
+                    setAnalysisPhase('complete')
+                    setAnalysisComplete(true)
+                    toast({
+                      title: "Analysis Complete",
+                      description: "Successfully analyzed beauty trends using Sephora Trend Agent.",
+                    })
+                    break
+                  }
+                }
+
+                // Fallback: Check if we have trend data in content
                 if (data.content?.parts?.[0]?.text) {
                   const responseText = data.content.parts[0].text
 
@@ -648,10 +726,13 @@ export default function SephoraTrendAnalyzer() {
     setAnalysisComplete(false)
     setTrendsData(null)
     setSephoraTrendData(null)
+    setResearchFindingsData(null)
+    setStructuredTrendsData(null)
     setSelectedTrend(null)
     setProducts([])
     setAnalysisProgress(undefined)
     setCurrentAnalysisId(null)
+    setAnalysisPhase('research')
   }
 
   const handleAddToCart = async (productId: string) => {
@@ -694,125 +775,399 @@ export default function SephoraTrendAnalyzer() {
     }
   }
 
-  const sidebarItems = [
+  const mainNavigationItems = [
+    {
+      id: "dashboard",
+      title: "AI Dashboard",
+      icon: HomeIcon,
+      description: "Executive overview & AI insights",
+      badge: null,
+    },
     {
       id: "trend-analyzer",
-      title: "AI Trend Analyzer",
+      title: "Trend Discovery",
       icon: TrendingUpIcon,
-      description: "Analyze latest beauty trends",
+      description: "AI-powered trend analysis",
+      badge: "Hot",
     },
     {
-      id: "product-insights",
-      title: "Product Insights",
+      id: "ai-trend-application",
+      title: "Visual Trend Studio",
+      icon: CameraIcon,
+      description: "Apply trends to photos",
+      badge: "AI",
+    },
+    {
+      id: "sephora-bundles",
+      title: "Sephora Bundles",
+      icon: PackageIcon,
+      description: "AI-curated product bundles",
+      badge: "Soon",
+    },
+    {
+      id: "ai-insights",
+      title: "AI Insights",
+      icon: SparklesIcon,
+      description: "Advanced beauty analytics",
+      badge: null,
+    },
+    {
+      id: "customer-ai",
+      title: "Customer AI",
+      icon: UsersIcon,
+      description: "AI-driven customer analysis",
+      badge: null,
+    },
+    {
+      id: "predictive-analytics",
+      title: "Predictive Analytics",
       icon: BarChart3Icon,
-      description: "Coming soon",
+      description: "AI forecasting & predictions",
+      badge: "Pro",
+    },
+  ]
+
+  const quickActionsItems = [
+    {
+      id: "ai-scan",
+      title: "AI Product Scan",
+      icon: CameraIcon,
+      description: "Scan & analyze products",
     },
     {
-      id: "customer-analytics",
-      title: "Customer Analytics",
-      icon: PaletteIcon,
-      description: "Coming soon",
+      id: "trend-report",
+      title: "Trend Report",
+      icon: FileTextIcon,
+      description: "Generate AI insights",
+    },
+    {
+      id: "bundle-creator",
+      title: "Bundle Creator",
+      icon: PackageIcon,
+      description: "AI-curated bundles",
+      badge: "New",
+    },
+    {
+      id: "ai-recommendations",
+      title: "AI Recommendations",
+      icon: SparklesIcon,
+      description: "Personalized suggestions",
+      badge: "5",
+    },
+  ]
+
+  const recentActivityItems = [
+    {
+      id: "recent-1",
+      title: "Satin Skin AI Analysis",
+      icon: SparkleIcon,
+      description: "2 hours ago",
+      category: "AI Trend",
+    },
+    {
+      id: "recent-2",
+      title: "Bundle Recommendation",
+      icon: PackageIcon,
+      description: "4 hours ago",
+      category: "AI Bundle",
+    },
+    {
+      id: "recent-3",
+      title: "Visual Trend Applied",
+      icon: CameraIcon,
+      description: "1 day ago",
+      category: "AI Studio",
+    },
+    {
+      id: "recent-4",
+      title: "Customer AI Insights",
+      icon: UsersIcon,
+      description: "2 days ago",
+      category: "AI Analytics",
+    },
+  ]
+
+  const favoritesItems = [
+    {
+      id: "fav-1",
+      title: "AI Trend Predictions",
+      icon: StarIcon,
+      description: "Top AI-identified trends",
+    },
+    {
+      id: "fav-2",
+      title: "Sephora Bundle Library",
+      icon: PackageIcon,
+      description: "Saved AI-curated bundles",
+    },
+    {
+      id: "fav-3",
+      title: "Visual Trend Gallery",
+      icon: CameraIcon,
+      description: "AI-applied trend looks",
+    },
+    {
+      id: "fav-4",
+      title: "AI Performance Metrics",
+      icon: AwardIcon,
+      description: "AI accuracy & insights",
     },
   ]
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
-        <Sidebar className="border-r border-sidebar-border w-64 flex-shrink-0">
-          <SidebarHeader className="border-b border-sidebar-border bg-sidebar">
-            <div className="flex items-center gap-2 px-3 py-4">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-black/5">
-                <svg
-                  role="img"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="size-5 text-black"
-                  fill="currentColor"
-                >
-                  <title>Sephora</title>
-                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12c3.226 0 6.142-1.253 8.318-3.321L12 12V0zm0 12l8.318 8.679A11.94 11.94 0 0 0 24 12c0-6.627-5.373-12-12-12v12z" />
-                </svg>
+      <div className="flex min-h-screen w-full bg-white">
+        <Sidebar className="border-r border-gray-800 w-72 flex-shrink-0 bg-gradient-to-b from-gray-900 to-black">
+          <SidebarHeader className="border-b border-gray-800 bg-gradient-to-b from-gray-900 to-black">
+            <div className="flex items-center gap-3 px-4 py-4">
+              <div className="flex size-12 items-center justify-center">
+                <img
+                  src="/logo.jpeg"
+                  alt="Sephora"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-lg font-bold text-sidebar-foreground tracking-tight truncate">SEPHORA</span>
-                <span className="text-xs text-sidebar-foreground/70 font-medium truncate">Trend Intelligence</span>
+                <span className="text-xl sephora-title text-white tracking-tight truncate">SEPHORA</span>
+                <span className="text-xs text-gray-400 font-medium truncate">Beauty Intelligence Platform</span>
               </div>
             </div>
           </SidebarHeader>
 
-          <SidebarContent>
-            <div className="px-2 py-3">
-              <SidebarMenu className="space-y-1">
-                {sidebarItems.map((item) => (
-                  <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton
-                      isActive={activeTab === item.id}
-                      onClick={() => setActiveTab(item.id)}
-                      className="w-full rounded-lg px-2 py-2.5 text-left transition-all hover:bg-sidebar-accent data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground min-h-[3rem]"
-                    >
-                      <item.icon className="size-4 shrink-0" />
-                      <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
-                        <span className="font-semibold text-sm leading-tight truncate w-full">{item.title}</span>
-                        <span className="text-xs opacity-70 leading-tight truncate w-full">{item.description}</span>
-                      </div>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </div>
+          <SidebarContent className="px-2 bg-gradient-to-b from-gray-900 to-black overflow-y-auto overflow-x-hidden">
+            {/* Main Navigation */}
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                AI Applications
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">
+                  {mainNavigationItems.map((item) => (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        isActive={activeTab === item.id}
+                        onClick={() => setActiveTab(item.id)}
+                        className="w-full rounded-lg px-3 py-3 text-left transition-all hover:bg-gray-800 data-[active=true]:bg-pink-600 data-[active=true]:text-white min-h-[3.5rem] group text-white sidebar-item"
+                      >
+                        <item.icon className="size-5 shrink-0" />
+                        <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
+                          <div className="flex items-center gap-2 w-full">
+                            <span className="font-semibold text-sm leading-tight truncate">{item.title}</span>
+                            {item.badge && (
+                              <Badge variant="secondary" className="text-xs px-1.5 py-0.5 bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300">
+                                {item.badge}
+                              </Badge>
+                            )}
+                          </div>
+                          <span className="text-xs text-gray-400 leading-tight truncate w-full">{item.description}</span>
+                        </div>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarSeparator className="my-4 border-gray-800" />
+
+            {/* Quick Actions */}
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                AI Tools
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">
+                  {quickActionsItems.map((item) => (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        onClick={() => setActiveTab(item.id)}
+                        className="w-full rounded-lg px-3 py-2.5 text-left transition-all hover:bg-gray-800 min-h-[2.5rem] group text-white sidebar-item"
+                      >
+                        <item.icon className="size-4 shrink-0" />
+                        <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
+                          <div className="flex items-center gap-2 w-full">
+                            <span className="font-medium text-sm leading-tight truncate">{item.title}</span>
+                            {item.badge && (
+                              <Badge variant="outline" className="text-xs px-1.5 py-0.5 ml-auto border-pink-600 text-pink-400">
+                                {item.badge}
+                              </Badge>
+                            )}
+                          </div>
+                          <span className="text-xs text-gray-400 leading-tight truncate w-full">{item.description}</span>
+                        </div>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarSeparator className="my-4 border-gray-800" />
+
+            {/* Recent Activity */}
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                AI Activity
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">
+                  {recentActivityItems.map((item) => (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        onClick={() => setActiveTab(item.id)}
+                        className="w-full rounded-lg px-3 py-2.5 text-left transition-all hover:bg-gray-800 min-h-[2.5rem] group text-white sidebar-item"
+                      >
+                        <item.icon className="size-4 shrink-0" />
+                        <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
+                          <div className="flex items-center gap-2 w-full">
+                            <span className="font-medium text-sm leading-tight truncate">{item.title}</span>
+                            <Badge variant="outline" className="text-xs px-1.5 py-0.5 ml-auto border-pink-600 text-pink-400">
+                              {item.category}
+                            </Badge>
+                          </div>
+                          <span className="text-xs text-gray-400 leading-tight truncate w-full">{item.description}</span>
+                        </div>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarSeparator className="my-4 border-gray-800" />
+
+            {/* Favorites */}
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                AI Collections
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">
+                  {favoritesItems.map((item) => (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        onClick={() => setActiveTab(item.id)}
+                        className="w-full rounded-lg px-3 py-2.5 text-left transition-all hover:bg-gray-800 min-h-[2.5rem] group text-white sidebar-item"
+                      >
+                        <item.icon className="size-4 shrink-0" />
+                        <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
+                          <span className="font-medium text-sm leading-tight truncate">{item.title}</span>
+                          <span className="text-xs text-gray-400 leading-tight truncate w-full">{item.description}</span>
+                        </div>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
           </SidebarContent>
+
+          <SidebarFooter className="border-t border-gray-800 p-4 bg-gradient-to-b from-gray-900 to-black">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-pink-600 text-white text-sm font-semibold">
+                  SC
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="text-sm font-semibold text-white truncate">Sarah Chen</span>
+                <span className="text-xs text-gray-400 truncate">Beauty Intelligence Specialist</span>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white hover:bg-gray-800">
+                    <SettingsIcon className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem>
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <SettingsIcon className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </SidebarFooter>
         </Sidebar>
 
-        <SidebarInset className="flex-1 min-w-0 ml-0">
-          <header className="flex h-14 shrink-0 items-center justify-between border-b backdrop-blur-sm sticky top-0 z-50 px-4 bg-background/80">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="h-4" />
-              <div className="flex items-center gap-2">
-                <SparklesIcon className="size-4 text-primary" />
+        <SidebarInset className="flex-1 min-w-0 relative">
+          <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 backdrop-blur-sm sticky top-0 z-30 px-6 bg-gradient-to-r from-white to-pink-50/50 shadow-sm">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="-ml-1 text-gray-600 hover:text-gray-900" />
+              <Separator orientation="vertical" className="h-6 bg-gray-300" />
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-pink-600 header-icon">
+                  <SparklesIcon className="size-4 text-white" />
+                </div>
                 <div className="flex flex-col">
-                  <h1 className="text-sm font-bold text-foreground tracking-tight">Beauty Intelligence</h1>
-                  <p className="text-xs text-muted-foreground">AI-Powered Trend Analysis</p>
+                  <h1 className="text-lg font-bold text-gray-900 tracking-tight">
+                    {activeTab === "trend-analyzer" ? "Trend Discovery" :
+                      activeTab === "ai-trend-application" ? "Visual Trend Studio" :
+                        activeTab === "sephora-bundles" ? "Sephora Bundles" :
+                          activeTab === "ai-insights" ? "AI Insights" :
+                            activeTab === "customer-ai" ? "Customer AI" :
+                              activeTab === "predictive-analytics" ? "Predictive Analytics" :
+                                activeTab === "dashboard" ? "AI Dashboard" :
+                                  "Sephora AI Intelligence"}
+                  </h1>
+                  <p className="text-sm text-gray-600">
+                    {activeTab === "trend-analyzer" ? "AI-Powered Trend Analysis" :
+                      activeTab === "ai-trend-application" ? "Apply AI Trends to Images" :
+                        activeTab === "sephora-bundles" ? "AI-Curated Product Bundles" :
+                          activeTab === "ai-insights" ? "Advanced Beauty Analytics" :
+                            activeTab === "customer-ai" ? "AI-Driven Customer Analysis" :
+                              activeTab === "predictive-analytics" ? "AI Forecasting & Predictions" :
+                                activeTab === "dashboard" ? "Executive Overview & AI Insights" :
+                                  "Sephora AI Intelligence Platform"}
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="relative hidden md:block">
-                <SearchIcon className="absolute left-2.5 top-1/2 transform -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-gray-400" />
                 <Input
-                  placeholder="Search trends..."
-                  className="pl-9 w-48 h-8 bg-background/50 border-muted-foreground/20 text-sm"
+                  placeholder="Search trends, products..."
+                  className="pl-10 w-56 h-10 bg-gray-50 border-gray-200 text-sm focus:bg-white focus:border-pink-300 focus:ring-pink-200"
                 />
               </div>
 
-              <Button variant="ghost" size="sm" className="relative h-8 w-8">
-                <BellIcon className="size-3.5" />
-                <Badge className="absolute -top-0.5 -right-0.5 size-3.5 p-0 text-xs bg-red-500 text-white flex items-center justify-center">
+              <Button variant="ghost" size="sm" className="relative h-10 w-10 text-gray-600 hover:text-gray-900 hover:bg-gray-100 header-icon">
+                <BellIcon className="size-4" />
+                <Badge className="absolute -top-1 -right-1 size-5 p-0 text-xs bg-pink-600 text-white flex items-center justify-center rounded-full">
                   3
                 </Badge>
               </Button>
 
-              <Button variant="ghost" size="sm" className="h-8 w-8">
-                <HelpCircleIcon className="size-3.5" />
+              <Button variant="ghost" size="sm" className="h-10 w-10 text-gray-600 hover:text-gray-900 hover:bg-gray-100 header-icon">
+                <HelpCircleIcon className="size-4" />
               </Button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-gray-100 header-icon">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        <UserIcon className="size-3.5" />
+                      <AvatarFallback className="bg-pink-600 text-white text-sm font-semibold">
+                        SC
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48" align="end" forceMount>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">Sarah Chen</p>
-                      <p className="text-xs leading-none text-muted-foreground">sarah.chen@sephora.com</p>
-                      <Badge variant="secondary" className="w-fit text-xs mt-1">
+                      <p className="text-xs leading-none text-gray-500">sarah.chen@sephora.com</p>
+                      <Badge variant="secondary" className="w-fit text-xs mt-1 bg-pink-100 text-pink-700">
                         Beauty Analyst
                       </Badge>
                     </div>
@@ -835,7 +1190,7 @@ export default function SephoraTrendAnalyzer() {
             </div>
           </header>
 
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-6 bg-gradient-to-br from-white via-pink-50/30 to-purple-50/20 min-h-screen">
             {activeTab === "trend-analyzer" && (
               <div className="space-y-6 max-w-7xl mx-auto">
                 <TrendAnalysisInterface
@@ -846,12 +1201,39 @@ export default function SephoraTrendAnalyzer() {
                   onReset={handleReset}
                 />
 
-                {sephoraTrendData ? (
+                {/* Display components based on analysis phase */}
+                {analysisPhase === 'research' && researchFindingsData && (
+                  <ResearchFindingsDisplay
+                    data={researchFindingsData}
+                    isLoading={isAnalyzing}
+                  />
+                )}
+
+                {analysisPhase === 'structured' && structuredTrendsData && (
+                  <TrendFocusedDisplay
+                    structuredData={structuredTrendsData}
+                    researchData={researchFindingsData}
+                    isLoading={isAnalyzing}
+                  />
+                )}
+
+                {analysisPhase === 'complete' && structuredTrendsData && (
+                  <TrendFocusedDisplay
+                    structuredData={structuredTrendsData}
+                    researchData={researchFindingsData}
+                    isLoading={false}
+                  />
+                )}
+
+                {/* Fallback to old components */}
+                {!researchFindingsData && !structuredTrendsData && sephoraTrendData && (
                   <SephoraTrendsDisplay
                     data={sephoraTrendData}
                     isLoading={isAnalyzing}
                   />
-                ) : (
+                )}
+
+                {!researchFindingsData && !structuredTrendsData && !sephoraTrendData && (
                   <ComprehensiveTrendsDisplay
                     data={trendsData}
                     onTrendClick={handleTrendClick}
@@ -862,7 +1244,167 @@ export default function SephoraTrendAnalyzer() {
               </div>
             )}
 
-            {activeTab !== "trend-analyzer" && (
+            {activeTab === "ai-trend-application" && (
+              <div className="h-[calc(100vh-8rem)]">
+                <AITrendApplication />
+              </div>
+            )}
+
+            {activeTab === "sephora-bundles" && (
+              <div className="max-w-2xl mx-auto">
+                <Card className="border-2 border-dashed border-muted-foreground/20">
+                  <CardHeader className="text-center pb-4">
+                    <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-pink-100 to-purple-100 shadow-lg">
+                      <PackageIcon className="size-8 text-pink-600" />
+                    </div>
+                    <CardTitle className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent sephora-font">
+                      Sephora Bundles
+                    </CardTitle>
+                    <CardDescription className="text-base text-muted-foreground">
+                      AI-Curated Product Bundles Based on Trending Beauty Styles
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <p className="text-muted-foreground mb-6">
+                      Create intelligent product bundles by selecting a trend. Our AI will analyze the trend and curate
+                      the perfect combination of Sephora products to achieve that look, including makeup, skincare, and tools.
+                    </p>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-4 border rounded-lg bg-gradient-to-br from-pink-50 to-purple-50">
+                          <h3 className="font-semibold text-pink-700 mb-2">Trend-Based Bundles</h3>
+                          <p className="text-sm text-gray-600">Select any beauty trend and get AI-curated product recommendations</p>
+                        </div>
+                        <div className="p-4 border rounded-lg bg-gradient-to-br from-pink-50 to-purple-50">
+                          <h3 className="font-semibold text-pink-700 mb-2">Smart Pricing</h3>
+                          <p className="text-sm text-gray-600">Optimized bundles with competitive pricing and value analysis</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-6">
+                      <Button disabled className="mr-2 bg-pink-600 hover:bg-pink-700">
+                        <PackageIcon className="w-4 h-4 mr-2" />
+                        Coming Soon
+                      </Button>
+                      <Button variant="outline" onClick={() => setActiveTab("trend-analyzer")}>
+                        <TrendingUpIcon className="w-4 h-4 mr-2" />
+                        Explore Trends First
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {activeTab === "dashboard" && (
+              <div className="space-y-6 max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                      <TrendingUpIcon className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">$2,350,000</div>
+                      <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Active Products</CardTitle>
+                      <PackageIcon className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">1,234</div>
+                      <p className="text-xs text-muted-foreground">+12 new this week</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Customers</CardTitle>
+                      <UsersIcon className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">45,231</div>
+                      <p className="text-xs text-muted-foreground">+5.2% from last month</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Trending Now</CardTitle>
+                      <SparklesIcon className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">Satin Skin</div>
+                      <p className="text-xs text-muted-foreground">+67% search increase</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Top Performing Products</CardTitle>
+                      <CardDescription>Best sellers this month</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {[
+                          { name: "Fenty Beauty Gloss Bomb", sales: "$45,230", growth: "+12.5%" },
+                          { name: "Charlotte Tilbury Pillow Talk", sales: "$38,120", growth: "+8.2%" },
+                          { name: "Rare Beauty Soft Pinch Blush", sales: "$32,890", growth: "+15.3%" },
+                        ].map((product, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                              <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center text-sm font-medium">
+                                {index + 1}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium">{product.name}</p>
+                                <p className="text-xs text-muted-foreground">{product.sales}</p>
+                              </div>
+                            </div>
+                            <Badge variant="secondary" className="text-green-600 bg-green-50">
+                              {product.growth}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Recent Activity</CardTitle>
+                      <CardDescription>Latest updates and insights</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {[
+                          { action: "New trend detected", time: "2 hours ago", type: "trend" },
+                          { action: "Product restocked", time: "4 hours ago", type: "product" },
+                          { action: "Customer feedback received", time: "6 hours ago", type: "feedback" },
+                          { action: "Sales report generated", time: "1 day ago", type: "report" },
+                        ].map((activity, index) => (
+                          <div key={index} className="flex items-center space-x-4">
+                            <div className="w-2 h-2 bg-primary rounded-full"></div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">{activity.action}</p>
+                              <p className="text-xs text-muted-foreground">{activity.time}</p>
+                            </div>
+                            <Badge variant="outline" className="text-xs">
+                              {activity.type}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {activeTab !== "trend-analyzer" && activeTab !== "dashboard" && activeTab !== "ai-trend-application" && activeTab !== "sephora-bundles" && (
               <div className="max-w-2xl mx-auto">
                 <Card className="border-2 border-dashed border-muted-foreground/20">
                   <CardHeader className="text-center pb-4">
@@ -870,13 +1412,28 @@ export default function SephoraTrendAnalyzer() {
                       <SparklesIcon className="size-8 text-muted-foreground" />
                     </div>
                     <CardTitle className="text-2xl">Coming Soon</CardTitle>
-                    <CardDescription className="text-base">This feature is currently under development</CardDescription>
+                    <CardDescription className="text-base">
+                      {activeTab === "ai-insights" ? "AI Insights & Analytics" :
+                        activeTab === "customer-ai" ? "Customer AI Analysis" :
+                          activeTab === "predictive-analytics" ? "Predictive Analytics" :
+                            "This AI feature is currently under development"}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="text-center">
                     <p className="text-muted-foreground">
-                      We're working on bringing you more powerful analytics and insights tools to enhance your beauty
-                      business intelligence.
+                      We're working on bringing you more powerful AI-driven analytics and insights tools to enhance your beauty
+                      business intelligence. This section will be available soon.
                     </p>
+                    <div className="mt-6">
+                      <Button onClick={() => setActiveTab("trend-analyzer")} className="mr-2">
+                        <TrendingUpIcon className="w-4 h-4 mr-2" />
+                        Try Trend Discovery
+                      </Button>
+                      <Button variant="outline" onClick={() => setActiveTab("ai-trend-application")}>
+                        <CameraIcon className="w-4 h-4 mr-2" />
+                        Visual Trend Studio
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </div>

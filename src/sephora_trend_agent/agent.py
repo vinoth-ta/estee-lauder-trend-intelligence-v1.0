@@ -1,10 +1,6 @@
-import json
-from datetime import datetime
-from typing import Literal, AsyncGenerator
 import logging
 
-from google.adk.agents import BaseAgent, LlmAgent, LoopAgent, SequentialAgent
-from google.adk.events import Event, EventActions
+from google.adk.agents import LlmAgent, SequentialAgent
 from google.adk.planners import BuiltInPlanner
 from google.adk.tools import google_search
 from google.genai import types as genai_types
@@ -12,8 +8,8 @@ from pydantic import BaseModel, Field
 from google.genai import types
 
 
-from src.sephora_trend_agent.config import config
-from src.sephora_trend_agent.callbacks import (
+from .config import config
+from .callbacks import (
     collect_research_sources_callback,
     # citation_replacement_callback,
 )
@@ -25,8 +21,28 @@ logging.basicConfig(
 
 class TrendItem(BaseModel):
     name: str = Field(description="The name of the trend.")
-    description: str = Field(description="A detailed description of the trend.")
-    techniques: list[str] = Field(description="A list of techniques related to the trend.")
+    description: str = Field(
+        description="A detailed description of the trend (2-3 sentences explaining what it is and why it's popular)."
+    )
+    techniques: list[str] = Field(
+        description="A list of 3-5 specific, actionable techniques or methods related to the trend. Each technique should be concise (2-4 words) and practical."
+    )
+    popularity: str = Field(
+        description="The popularity level of the trend (e.g., 'Rising', 'Viral', 'Emerging', 'Growing')",
+        default="Rising",
+    )
+    difficulty: str = Field(
+        description="The difficulty level for consumers (e.g., 'Beginner', 'Intermediate', 'Advanced')",
+        default="Beginner",
+    )
+    key_products: list[str] = Field(
+        description="A list of 2-3 key product types or ingredients that are commonly available at Sephora (e.g., 'Hyaluronic Acid Serum', 'Matte Lipstick', 'Heat Protectant Spray'). Only include products that are typical Sephora inventory.",
+        default=[],
+    )
+    target_demographic: str = Field(
+        description="The primary demographic interested in this trend (e.g., 'Gen Z', 'Millennials', 'All ages')",
+        default="All ages",
+    )
 
 
 class TrendCategory(BaseModel):
@@ -78,6 +94,18 @@ trend_research_agent = LlmAgent(
     1. **Source-Based Reality**: Your findings MUST be based *exclusively* on information found through the `google_search` tool. Do NOT invent, exaggerate, or "hallucinate" any details or trends.
     2. **Sephora Relevance**: Only report on trends that are relevant to Sephora. This means trends related to makeup, skincare, fragrance, hair care, and beauty tools that you would reasonably find at Sephora. If a trend is about something completely unrelated, ignore it.
     3. **Trends**: You should find trends for each of the following categories: makeup, skincare and hair.
+    4. **Technique Quality**: When reporting techniques, focus on specific, actionable methods that people can actually do. Examples of good techniques: "Blend outward", "Pat gently", "Use circular motions", "Apply in layers". Avoid vague terms like "apply properly" or "use technique".
+    5. **Comprehensive Information**: For each trend, gather information about:
+       - Specific techniques mentioned in tutorials or discussions
+       - Popularity indicators (mentions, views, engagement)
+       - Difficulty level based on user comments and tutorials
+       - Key products or ingredients that are commonly available at Sephora (avoid niche or specialty products)
+       - Target demographic based on platform and discussion context
+    6. **Sephora Product Focus**: When identifying key products, only include items that are typically sold at Sephora:
+       - Common beauty brands (Fenty, Rare Beauty, Charlotte Tilbury, etc.)
+       - Standard product categories (serums, foundations, lipsticks, etc.)
+       - Popular ingredients (hyaluronic acid, retinol, vitamin C, etc.)
+       - Avoid mentioning specific products that may not be available at Sephora
     """,
     # output_model=SephoraTrendsReport,
     tools=[google_search],
@@ -95,9 +123,24 @@ output_composer_agent = LlmAgent(
     The output research from the trend research agent is in the {sephora_trend_research_findings_with_citations} key. Make sure to use the citations in the output.
     The output model is SephoraTrendsReport.
     The output model has the following fields:
-    - report_summary: str
-    - trends: TrendCategory
-    You need to compose the output model based on the output research from the trend research agent.
+    - report_summary: str (A comprehensive summary of the overall beauty landscape based on the research)
+    - trends: TrendCategory (Contains makeup_trends, skincare_trends, and hair_trends)
+    
+    Each TrendItem should include:
+    - name: Clear, catchy trend name
+    - description: 2-3 sentences explaining what it is and why it's popular
+    - techniques: 3-5 specific, actionable techniques (2-4 words each, like "Blend outward", "Pat gently")
+    - popularity: Level based on research findings ("Rising", "Viral", "Emerging", "Growing")
+    - difficulty: Consumer difficulty level ("Beginner", "Intermediate", "Advanced")
+    - key_products: 2-3 key product types or ingredients that are commonly available at Sephora
+    - target_demographic: Primary demographic ("Gen Z", "Millennials", "All ages")
+    
+    **IMPORTANT**: 
+    - Extract techniques from actual tutorials, comments, and discussions found in the research
+    - Base popularity and difficulty on real user feedback and engagement data
+    - Identify key products from mentions in the research sources, but only include products that are typically available at Sephora
+    - Determine target demographic from platform context and user discussions
+    - Ensure all information is grounded in the research findings with proper citations
     """,
     output_key="sephora_trends_report",
     output_schema=SephoraTrendsReport,
@@ -131,7 +174,7 @@ if __name__ == "__main__":
     async def call_agent_async(query: str, runner, user_id, session_id):
         """Sends a query to the agent and prints the final response."""
         print(f"\n>>> User Query: {query}")
-        session = await session_service.create_session(
+        await session_service.create_session(
             app_name=APP_NAME,
             user_id=USER_ID,
             session_id=SESSION_ID,
@@ -170,7 +213,9 @@ if __name__ == "__main__":
 
                     print(final_output)
 
-                    citations = final_session.state.get("sephora_trend_research_findings_with_citations")
+                    citations = final_session.state.get(
+                        "sephora_trend_research_findings_with_citations"
+                    )
                     print(citations)
 
                 # if final_output:

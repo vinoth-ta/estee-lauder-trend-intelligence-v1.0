@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import { Montserrat } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 
-const montserrat = Montserrat({
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
 })
@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans ${montserrat.variable}`}>
+      <body className={`font-sans ${inter.variable}`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           {children}
           <Analytics />
