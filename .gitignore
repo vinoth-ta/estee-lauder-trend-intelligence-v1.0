@@ -1,11 +1,64 @@
 # Python-generated files
 __pycache__/
 *.py[oc]
+*.pyo
+*.pyd
 build/
 dist/
 wheels/
 *.egg-info
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Virtual environments
-.venv
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables (contains sensitive API keys)
 .env
+.env.local
+.env.*.local
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Node.js / Frontend
+node_modules/
+.next/
+out/
+.turbo/
+
+# UV Python package manager
+# Keep uv.lock for reproducible builds
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Google Cloud credentials
+*.json
+!scripts/openapi.json
+application_default_credentials.json
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Build outputs
+*.pyc
+*.pyo
+*.so
+*.dylib

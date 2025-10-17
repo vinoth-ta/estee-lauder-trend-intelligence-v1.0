@@ -1,125 +1,235 @@
-# Sephora AI - Project Summary
+# Beauty Intelligence Platform - Project Summary
 
-## What We Built
+## Overview
 
-A comprehensive web scraper for Sephora products that demonstrates modern web scraping techniques while being honest about real-world limitations.
+The Beauty Intelligence Platform is an AI-powered application that combines Google Gemini for trend discovery and Azure OpenAI FLUX for image transformation. It provides beauty professionals and consumers with insights into emerging trends and the ability to visualize them on their own photos.
 
-## Project Structure
+## Key Components
+
+### 1. Backend (FastAPI + Google ADK)
+- **Framework**: FastAPI with async/await support
+- **AI Agent**: Google ADK-based multi-agent system
+- **Models**: Gemini 2.5 Pro for trend research and analysis
+- **Image Processing**: Azure OpenAI FLUX for beauty transformations
+
+### 2. Frontend (Next.js 15 + React 19)
+- **Framework**: Next.js 15 with App Router
+- **UI Components**: Radix UI with Tailwind CSS v4
+- **State Management**: React Hook Form + Zod validation
+- **Styling**: Modern dark mode support with Tailwind
+
+### 3. AI Integration
+- **Google Vertex AI**: Gemini 2.5 Pro for natural language processing and web research
+- **Azure OpenAI**: FLUX.1-Kontext-pro for image editing and transformation
+- **Real-time Streaming**: Server-Sent Events (SSE) for live updates
+
+## Features
+
+### Trend Discovery
+- Multi-agent system with research and composition agents
+- Web search integration using Google Search
+- Citation-backed findings with source attribution
+- Categorized results (makeup, skincare, hair)
+- Structured output using Pydantic models
+
+### Image Transformation
+- AI-powered beauty trend application to photos
+- Category-specific transformations (makeup, skincare, hair)
+- Preserves user identity and facial features
+- Base64 image processing with async HTTP client
+
+### User Experience
+- Real-time streaming of trend research results
+- Interactive UI with modern design
+- Responsive layout for all devices
+- Fast page loads with Next.js optimizations
+
+## Architecture
 
 ```
-sephora_ai/
-├── scripts/
-│   └── sephora_products_scraper.py  # Main scraper implementation
-├── main.py                          # Interactive menu interface
-├── demo_scraper.py                  # Demo/testing script
-├── test_scraper.py                  # Test script
-├── pyproject.toml                   # Project configuration
-├── README.md                        # Documentation
-└── SUMMARY.md                       # This file
+┌──────────────┐
+│   Frontend   │  Next.js 15 + React 19
+│  Port 3000   │  Radix UI + Tailwind CSS
+└──────┬───────┘
+       │ HTTP/SSE
+┌──────▼───────┐
+│   Backend    │  FastAPI + Google ADK
+│  Port 8000   │  Uvicorn ASGI Server
+└──────┬───────┘
+       │
+   ┌───┴────┐
+   │        │
+┌──▼──┐  ┌─▼────┐
+│Google│  │Azure │
+│Gemini│  │FLUX  │
+└──────┘  └──────┘
 ```
 
-## Key Features
+## Technical Highlights
 
-### 🛠️ Technical Implementation
-- **Python 3.13** with `uv` package management
-- **BeautifulSoup4** for HTML parsing
-- **Requests** for HTTP handling
-- **Pandas** for data manipulation and CSV export
-- **Comprehensive error handling** and logging
+### Backend
+- **Async Processing**: Full async/await support for high performance
+- **Agent Architecture**: Sequential multi-agent system with specialized roles
+- **Error Handling**: Comprehensive error handling and logging
+- **API Documentation**: Auto-generated OpenAPI/Swagger docs
 
-### 📊 Data Extraction
-The scraper is designed to extract:
-- Product name and brand
-- Price information
-- Ratings and review counts
-- Product categories
-- Descriptions and ingredients
-- Size and availability
-- Product URLs
+### Frontend
+- **Modern React**: React 19 with latest features
+- **Type Safety**: Full TypeScript support
+- **Component Library**: Extensive Radix UI component collection
+- **Performance**: Next.js 15 optimizations and edge runtime support
 
-### 🚀 Robust Architecture
-- **Session management** with proper headers
-- **Rate limiting** with random delays
-- **Multiple URL strategies** for finding products
-- **Graceful error handling** for network issues
-- **Partial result saving** on interruption
+### AI/ML
+- **Temperature Control**: Low temperature (0.01) for deterministic outputs
+- **Structured Output**: Type-safe Pydantic models for AI responses
+- **Web Grounding**: Citation tracking for all research findings
+- **Multi-modal**: Text analysis + image generation
 
-## Current Status
+## Development Stack
 
-### ✅ What Works
-- **Project setup** with proper dependencies
-- **Scraper architecture** is sound and well-structured
-- **Error handling** is comprehensive
-- **Data processing** pipeline is functional
-- **CSV export** with summary reports
+**Backend:**
+- Python 3.10+
+- FastAPI 0.116.1+
+- Google ADK 1.12.0+
+- Uvicorn (ASGI server)
+- BeautifulSoup4 (web scraping)
+- Pandas (data processing)
 
-### ⚠️ Real-World Limitations
-- **Website blocking**: Sephora implements anti-bot measures
-- **403 Forbidden errors**: Common with modern e-commerce sites
-- **404 redirects**: Site structure changes and regional redirects
-- **Rate limiting**: Automated requests are detected and blocked
+**Frontend:**
+- Next.js 15.2.4
+- React 19
+- TypeScript 5
+- Tailwind CSS 4.1.9
+- Radix UI components
+- React Hook Form + Zod
 
-## Why This Happens
+**AI Services:**
+- Google Vertex AI (Gemini 2.5 Pro)
+- Azure OpenAI (FLUX.1-Kontext-pro)
 
-Modern e-commerce websites like Sephora implement sophisticated protection:
+## Project Status
 
-1. **Bot Detection**: Analyze request patterns, headers, and behavior
-2. **Rate Limiting**: Limit requests from the same IP
-3. **Geographic Blocking**: Redirect to regional sites
-4. **Dynamic Content**: Load data via JavaScript
-5. **CAPTCHA Systems**: Challenge suspicious requests
+### Completed Features ✓
+- [x] Google ADK agent integration
+- [x] Gemini 2.5 Pro configuration
+- [x] Multi-agent workflow (research + composition)
+- [x] Azure FLUX image transformation
+- [x] Server-Sent Events streaming
+- [x] Next.js frontend with Radix UI
+- [x] Environment configuration
+- [x] API documentation
+- [x] Error handling and logging
+- [x] Comprehensive README and setup guide
 
-## Educational Value
+### Architecture Decisions
 
-Despite the blocking, this project demonstrates:
+1. **Google ADK**: Chosen for its robust agent framework and Vertex AI integration
+2. **FastAPI**: Selected for async support and automatic API documentation
+3. **Next.js 15**: Leverages latest React 19 features and App Router
+4. **Vertex AI**: Enterprise-grade authentication with Application Default Credentials
+5. **Pydantic Models**: Type-safe data structures for AI responses
 
-- **Professional web scraping techniques**
-- **Proper error handling and logging**
-- **Respectful scraping practices** (delays, headers)
-- **Data processing and export**
-- **Real-world problem solving**
+## Usage
 
-## Usage Instructions
-
-### Quick Start
+### Local Development
 ```bash
-# Install dependencies
-uv sync
+# Backend
+make run-backend
 
-# Run the scraper
-uv run python scripts/sephora_products_scraper.py
-
-# Test functionality
-uv run python demo_scraper.py
-
-# Interactive menu
-uv run python main.py
+# Frontend
+make run-frontend
 ```
 
-### Expected Behavior
-- The scraper will attempt to access Sephora's website
-- It will likely encounter 403/404 errors (this is normal)
-- The scraper handles these gracefully and provides clear feedback
-- No fake data is generated - it's honest about limitations
+### Endpoints
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
 
-## Future Improvements
+## Configuration
 
-If you want to make this work in practice, consider:
+All configuration is managed through environment variables in `.env`:
 
-1. **Proxy rotation** to avoid IP blocking
-2. **Browser automation** (Selenium/Playwright) for JavaScript content
-3. **API endpoints** if Sephora has public APIs
-4. **Respectful delays** and user-agent rotation
-5. **Legal compliance** and terms of service review
+```env
+# Azure OpenAI
+AZURE_OPENAI_API_KEY=your_key
 
-## Conclusion
+# Google AI
+GOOGLE_GENAI_USE_VERTEXAI=True
+GOOGLE_CLOUD_PROJECT=your_project
 
-This is a well-architected web scraper that demonstrates professional development practices. While it may not work against Sephora's current anti-bot measures, it serves as an excellent example of how to build robust web scraping tools that handle real-world challenges gracefully.
+# Backend URLs
+BACKEND_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
 
-The project shows:
-- ✅ Proper Python project structure
-- ✅ Modern dependency management
-- ✅ Comprehensive error handling
-- ✅ Professional logging and documentation
-- ✅ Honest assessment of limitations
-- ✅ Educational value for web scraping techniques
+## Authentication
+
+### Google Vertex AI
+Uses Application Default Credentials:
+```bash
+gcloud auth application-default login
+```
+
+### Azure OpenAI
+Uses API key authentication via environment variable.
+
+## Data Flow
+
+1. **User Request** → Frontend UI
+2. **API Call** → Backend FastAPI endpoint
+3. **Agent Execution** → Google ADK processes request
+4. **Web Search** → Gemini performs trend research
+5. **Composition** → Results structured into Pydantic models
+6. **SSE Stream** → Real-time updates sent to frontend
+7. **Display** → Results shown in UI with citations
+
+For image transformation:
+1. **Image Upload** → Base64 encoded
+2. **Prompt Creation** → Category-specific instructions
+3. **FLUX API** → Azure OpenAI processes image
+4. **Response** → Transformed image returned
+5. **Display** → Result shown in UI
+
+## Performance Considerations
+
+- Async processing throughout the stack
+- Streaming responses for faster perceived performance
+- Optimized Next.js bundle with code splitting
+- Efficient image handling with base64 encoding
+- Connection pooling for external API calls
+
+## Security
+
+- Environment variables for sensitive credentials
+- CORS configuration for frontend-backend communication
+- API key rotation support
+- Secure credential storage with gcloud ADC
+- Input validation with Zod schemas
+
+## Future Enhancements
+
+Potential improvements for future iterations:
+- Caching layer for repeated trend queries
+- User authentication and session management
+- Trend history and favorites
+- Batch image processing
+- Additional AI models for comparison
+- Product recommendations based on trends
+- Social media integration for trend validation
+
+## Documentation
+
+- [README.md](./README.md) - Complete setup and usage guide
+- [SETUP_GUIDE.md](./SETUP_GUIDE.md) - Detailed local setup instructions
+- [/docs](http://localhost:8000/docs) - Interactive API documentation
+- [openapi.json](./scripts/openapi.json) - OpenAPI specification
+
+## Support
+
+For issues or questions, refer to the [Troubleshooting](./README.md#troubleshooting) section in the README.
+
+---
+
+**Project**: Beauty Intelligence Platform
+**Organization**: Tiger Analytics
+**Last Updated**: October 2024
