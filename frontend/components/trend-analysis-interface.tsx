@@ -45,12 +45,12 @@ export function TrendAnalysisInterface({
   return (
     <div className="space-y-4">
       {/* Simple Action Button */}
-      <Card className="border-2 border-dashed border-muted-foreground/20 hover:border-muted-foreground/40 transition-all duration-300 bg-gradient-to-br from-pink-50/50 to-purple-50/50">
+      <Card className="border-2 border-dashed border-muted-foreground/20 hover:border-muted-foreground/40 transition-all duration-300 bg-gradient-to-br from-[#ebd79a]/10/50 to-[#ebd79a]/10/50">
         <CardHeader className="text-center pb-4">
-          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-pink-100 to-purple-100 shadow-lg">
-            <PlayIcon className="size-8 text-pink-600 animate-pulse" />
+          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-[#ebd79a]/20 to-[#ebd79a]/20 shadow-lg">
+            <PlayIcon className="size-8 text-[#040a2b] animate-pulse" />
           </div>
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent sephora-font">
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-[#040a2b] to-[#ebd79a] bg-clip-text text-transparent estee-lauder-font">
             Discover Beauty Trends
           </CardTitle>
           <CardDescription className="text-base text-muted-foreground">
@@ -63,7 +63,7 @@ export function TrendAnalysisInterface({
               onClick={() => onRunAnalysis(config)}
               disabled={isAnalyzing}
               size="lg"
-              className="h-12 px-8 text-base font-bold bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+              className="h-12 px-8 text-base font-bold bg-gradient-to-r from-[#ebd79a]/100 to-[#ebd79a]/100 hover:from-[#040a2b] hover:to-[#040a2b] text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
             >
               {isAnalyzing ? (
                 <>

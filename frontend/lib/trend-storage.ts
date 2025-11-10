@@ -19,7 +19,7 @@ export interface StoredTrendsData {
     totalTrends: number
 }
 
-const STORAGE_KEY = 'sephora_trends_data'
+const STORAGE_KEY = 'estee_lauder_trends_data'
 const STORAGE_FILE = '/api/trends-data'
 
 export function saveTrendsToStorage(structuredData: StructuredTrendsData): void {

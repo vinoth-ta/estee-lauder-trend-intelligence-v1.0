@@ -17,7 +17,7 @@ export interface TrendAnalysisResponse {
   }
 }
 
-// Interface matching the actual sephora_trend_agent response from agent.py
+// Interface matching the actual estee_lauder_trend_agent response from agent.py
 export interface TrendItem {
   name: string
   description: string
@@ -34,15 +34,15 @@ export interface TrendCategory {
   hair_trends: TrendItem[]
 }
 
-export interface SephoraTrendsReport {
+export interface EsteeLauderTrendsReport {
   report_summary: string
   trends: TrendCategory
 }
 
 // Interface for the complete agent response (includes thinking process)
-export interface SephoraTrendAgentResponse {
+export interface EsteeLauderTrendAgentResponse {
   thinking: string
-  report: SephoraTrendsReport
+  report: EsteeLauderTrendsReport
 }
 
 // Interface for research findings with citations
@@ -103,9 +103,9 @@ export interface SSEResponseData {
   author?: string
   actions?: {
     stateDelta?: {
-      sephora_trend_research_findings?: string
-      sephora_trend_research_findings_with_citations?: string
-      sephora_trends_report?: StructuredTrendsData
+      estee_lauder_trend_research_findings?: string
+      estee_lauder_trend_research_findings_with_citations?: string
+      estee_lauder_trends_report?: StructuredTrendsData
       sources?: { [key: string]: Source }
       url_to_short_id?: { [key: string]: string }
     }
@@ -160,7 +160,7 @@ export interface ProductData {
   rating: number
   reviews_count: number
   availability: "in_stock" | "low_stock" | "out_of_stock"
-  sephora_url: string
+  esteelauder_url: string
   relevance_score: number
   trend_alignment: {
     keywords_matched: string[]
@@ -175,7 +175,7 @@ export interface AnalysisConfig {
   region: string
 }
 
-class SephoraAPI {
+class EsteeLauderAPI {
   private baseUrl: string
 
   constructor(baseUrl: string = API_BASE_URL) {
@@ -309,7 +309,7 @@ class SephoraAPI {
   }
 }
 
-// Functions for sephora trend agent integration
+// Functions for estee lauder trend agent integration
 export const createSession = async (appName: string, userId: string, sessionId: string): Promise<void> => {
   try {
     const response = await fetch('/api/session', {
@@ -409,7 +409,7 @@ export const generateSessionId = (appName: string, agentId: string): string => {
   return `${appName}-${agentId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
-export const sephoraAPI = new SephoraAPI()
+export const esteeLauderAPI = new EsteeLauderAPI()
 export const withRetry = async <T>(
   fn: () => Promise<T>,
   maxRetries: number = 3,

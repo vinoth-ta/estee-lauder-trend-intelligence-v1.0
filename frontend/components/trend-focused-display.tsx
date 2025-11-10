@@ -149,11 +149,11 @@ export function TrendFocusedDisplay({
     return (
         <div className="space-y-6">
             {/* Executive Summary */}
-            <Card className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 border-pink-200 dark:border-pink-800">
+            <Card className="bg-gradient-to-r from-[#ebd79a]/10 to-[#ebd79a]/10 dark:from-[#040a2b]/20 dark:to-[#040a2b]/20 border-[#ebd79a]/30 dark:border-[#040a2b]">
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <SparklesIcon className="h-5 w-5 text-pink-600" />
+                            <SparklesIcon className="h-5 w-5 text-[#040a2b]" />
                             <CardTitle className="text-xl">Executive Summary</CardTitle>
                         </div>
                         <div className="flex gap-2">
@@ -279,7 +279,7 @@ export function TrendFocusedDisplay({
                     <Card className="h-fit">
                         <CardHeader>
                             <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 bg-pink-500 rounded-full"></div>
+                                <div className="w-3 h-3 bg-[#ebd79a]/100 rounded-full"></div>
                                 <CardTitle className="text-lg">Makeup Trends</CardTitle>
                                 <Badge variant="outline" className="ml-auto">
                                     {trends.makeup_trends.length}
@@ -295,20 +295,20 @@ export function TrendFocusedDisplay({
                                     const shouldTruncate = trend.description.length > 120
 
                                     return (
-                                        <div key={index} className="group relative p-6 rounded-2xl border-2 border-pink-100 bg-gradient-to-br from-white to-pink-50/30 hover:border-pink-200 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 shadow-sm">
+                                        <div key={index} className="group relative p-6 rounded-2xl border-2 border-[#ebd79a]/20 bg-gradient-to-br from-white to-[#ebd79a]/10/30 hover:border-[#ebd79a]/30 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 shadow-sm">
                                             {/* Trend Header */}
                                             <div className="flex items-start justify-between mb-4">
                                                 <div className="flex-1 min-w-0">
-                                                    <h4 className="font-bold text-xl text-gray-900 leading-tight mb-3 bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
+                                                    <h4 className="font-bold text-xl text-gray-900 leading-tight mb-3 bg-gradient-to-r from-[#040a2b] to-[#ebd79a] bg-clip-text text-transparent">
                                                         {trend.name}
                                                     </h4>
-                                                    <div className="w-16 h-1.5 bg-gradient-to-r from-pink-400 to-rose-400 rounded-full shadow-sm"></div>
+                                                    <div className="w-16 h-1.5 bg-gradient-to-r from-[#040a2b] to-[#ebd79a] rounded-full shadow-sm"></div>
                                                 </div>
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
                                                     onClick={() => copyToClipboard(`${trend.name}: ${trend.description}`, trend.name)}
-                                                    className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-pink-50 rounded-full"
+                                                    className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-[#ebd79a]/10 rounded-full"
                                                 >
                                                     {copiedText === trend.name ? (
                                                         <CheckIcon className="h-4 w-4 text-green-600" />
@@ -328,7 +328,7 @@ export function TrendFocusedDisplay({
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => toggleTrendExpansion(trendId)}
-                                                        className="h-6 px-0 text-xs text-pink-600 hover:text-pink-700 hover:bg-transparent mt-2 font-medium"
+                                                        className="h-6 px-0 text-xs text-[#040a2b] hover:text-[#040a2b] hover:bg-transparent mt-2 font-medium"
                                                     >
                                                         {isExpanded ? 'Show less' : 'Read more'}
                                                     </Button>
@@ -362,14 +362,14 @@ export function TrendFocusedDisplay({
                                                 {trend.key_products && trend.key_products.length > 0 && (
                                                     <div>
                                                         <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-                                                            Sephora Products
+                                                            Estee Lauder Products
                                                         </div>
                                                         <div className="flex flex-wrap gap-1.5">
                                                             {trend.key_products.slice(0, areProductsExpanded ? trend.key_products.length : 2).map((product, productIndex) => (
                                                                 <Badge
                                                                     key={productIndex}
                                                                     variant="outline"
-                                                                    className="text-xs px-2.5 py-1 border-pink-200 text-pink-700 bg-pink-50 hover:bg-pink-100 transition-colors rounded-full"
+                                                                    className="text-xs px-2.5 py-1 border-[#ebd79a]/30 text-[#040a2b] bg-[#ebd79a]/10 hover:bg-[#ebd79a]/20 transition-colors rounded-full"
                                                                     title={product}
                                                                 >
                                                                     {product}
@@ -380,7 +380,7 @@ export function TrendFocusedDisplay({
                                                                     variant="ghost"
                                                                     size="sm"
                                                                     onClick={() => toggleProductsExpansion(trendId)}
-                                                                    className="h-6 px-2 text-xs text-pink-600 hover:text-pink-700 hover:bg-pink-50 rounded-full"
+                                                                    className="h-6 px-2 text-xs text-[#040a2b] hover:text-[#040a2b] hover:bg-[#ebd79a]/10 rounded-full"
                                                                 >
                                                                     +{trend.key_products.length - 2}
                                                                 </Button>
@@ -515,7 +515,7 @@ export function TrendFocusedDisplay({
                                                 {trend.key_products && trend.key_products.length > 0 && (
                                                     <div>
                                                         <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-                                                            Sephora Products
+                                                            Estee Lauder Products
                                                         </div>
                                                         <div className="flex flex-wrap gap-1.5">
                                                             {trend.key_products.slice(0, areProductsExpanded ? trend.key_products.length : 2).map((product, productIndex) => (
@@ -585,7 +585,7 @@ export function TrendFocusedDisplay({
                     <Card className="h-fit">
                         <CardHeader>
                             <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                                <div className="w-3 h-3 bg-[#ebd79a]/100 rounded-full"></div>
                                 <CardTitle className="text-lg">Hair Trends</CardTitle>
                                 <Badge variant="outline" className="ml-auto">
                                     {trends.hair_trends.length}
@@ -601,20 +601,20 @@ export function TrendFocusedDisplay({
                                     const shouldTruncate = trend.description.length > 120
 
                                     return (
-                                        <div key={index} className="group relative p-6 rounded-2xl border-2 border-purple-100 bg-gradient-to-br from-white to-purple-50/30 hover:border-purple-200 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 shadow-sm">
+                                        <div key={index} className="group relative p-6 rounded-2xl border-2 border-[#ebd79a]/20 bg-gradient-to-br from-white to-[#ebd79a]/10/30 hover:border-[#ebd79a]/30 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 shadow-sm">
                                             {/* Trend Header */}
                                             <div className="flex items-start justify-between mb-4">
                                                 <div className="flex-1 min-w-0">
-                                                    <h4 className="font-bold text-xl text-gray-900 leading-tight mb-3 bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
+                                                    <h4 className="font-bold text-xl text-gray-900 leading-tight mb-3 bg-gradient-to-r from-[#040a2b] to-[#ebd79a] bg-clip-text text-transparent">
                                                         {trend.name}
                                                     </h4>
-                                                    <div className="w-16 h-1.5 bg-gradient-to-r from-purple-400 to-violet-400 rounded-full shadow-sm"></div>
+                                                    <div className="w-16 h-1.5 bg-gradient-to-r from-[#040a2b] to-[#ebd79a] rounded-full shadow-sm"></div>
                                                 </div>
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
                                                     onClick={() => copyToClipboard(`${trend.name}: ${trend.description}`, trend.name)}
-                                                    className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-purple-50 rounded-full"
+                                                    className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-[#ebd79a]/10 rounded-full"
                                                 >
                                                     {copiedText === trend.name ? (
                                                         <CheckIcon className="h-4 w-4 text-green-600" />
@@ -634,7 +634,7 @@ export function TrendFocusedDisplay({
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => toggleTrendExpansion(trendId)}
-                                                        className="h-6 px-0 text-xs text-purple-600 hover:text-purple-700 hover:bg-transparent mt-2 font-medium"
+                                                        className="h-6 px-0 text-xs text-[#040a2b] hover:text-[#040a2b] hover:bg-transparent mt-2 font-medium"
                                                     >
                                                         {isExpanded ? 'Show less' : 'Read more'}
                                                     </Button>
@@ -668,14 +668,14 @@ export function TrendFocusedDisplay({
                                                 {trend.key_products && trend.key_products.length > 0 && (
                                                     <div>
                                                         <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-                                                            Sephora Products
+                                                            Estee Lauder Products
                                                         </div>
                                                         <div className="flex flex-wrap gap-1.5">
                                                             {trend.key_products.slice(0, areProductsExpanded ? trend.key_products.length : 2).map((product, productIndex) => (
                                                                 <Badge
                                                                     key={productIndex}
                                                                     variant="outline"
-                                                                    className="text-xs px-2.5 py-1 border-purple-200 text-purple-700 bg-purple-50 hover:bg-purple-100 transition-colors rounded-full"
+                                                                    className="text-xs px-2.5 py-1 border-[#ebd79a]/30 text-[#040a2b] bg-[#ebd79a]/10 hover:bg-[#ebd79a]/20 transition-colors rounded-full"
                                                                     title={product}
                                                                 >
                                                                     {product}
@@ -686,7 +686,7 @@ export function TrendFocusedDisplay({
                                                                     variant="ghost"
                                                                     size="sm"
                                                                     onClick={() => toggleProductsExpansion(trendId)}
-                                                                    className="h-6 px-2 text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-full"
+                                                                    className="h-6 px-2 text-xs text-[#040a2b] hover:text-[#040a2b] hover:bg-[#ebd79a]/10 rounded-full"
                                                                 >
                                                                     +{trend.key_products.length - 2}
                                                                 </Button>

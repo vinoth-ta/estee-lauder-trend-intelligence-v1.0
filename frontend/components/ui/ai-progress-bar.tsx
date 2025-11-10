@@ -36,11 +36,11 @@ const stageIcons: Record<string, React.ComponentType<{ className?: string }>> = 
 
 const stageColors = {
     "Initializing Analysis": "from-blue-500 to-cyan-500",
-    "Creating Session": "from-purple-500 to-pink-500",
+    "Creating Session": "from-[#ebd79a]/100 to-[#ebd79a]/100",
     "Collecting Data": "from-green-500 to-emerald-500",
     "Processing Content": "from-orange-500 to-red-500",
-    "Identifying Trends": "from-pink-500 to-rose-500",
-    "Finalizing Report": "from-indigo-500 to-purple-500",
+    "Identifying Trends": "from-[#ebd79a]/100 to-[#ebd79a]",
+    "Finalizing Report": "from-indigo-500 to-[#ebd79a]/100",
     "Complete": "from-green-500 to-emerald-500",
 }
 
@@ -56,7 +56,7 @@ export function AIProgressBar({
     const [particles, setParticles] = React.useState<Array<{ id: number; x: number; y: number; delay: number }>>([])
 
     const StageIcon = stageIcons[stage] || SparklesIcon
-    const gradientClass = stageColors[stage] || "from-blue-500 to-purple-500"
+    const gradientClass = stageColors[stage] || "from-blue-500 to-[#ebd79a]/100"
 
     // Smooth progress animation
     React.useEffect(() => {
@@ -103,7 +103,7 @@ export function AIProgressBar({
                     {particles.map((particle) => (
                         <div
                             key={particle.id}
-                            className="absolute w-1 h-1 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full opacity-60"
+                            className="absolute w-1 h-1 bg-gradient-to-r from-blue-400 to-[#ebd79a] rounded-full opacity-60"
                             style={{
                                 left: `${particle.x}%`,
                                 top: `${particle.y}%`,
@@ -137,7 +137,7 @@ export function AIProgressBar({
                     </div>
 
                     <div className="text-right">
-                        <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-[#040a2b] bg-clip-text text-transparent">
                             {Math.round(displayValue)}%
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -198,7 +198,7 @@ export function AIProgressBar({
                     <div className="flex items-center gap-2">
                         <BrainIcon className="w-4 h-4 text-blue-500 animate-pulse" />
                         <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                            Sephora AI Engine
+                            Estee Lauder AI Engine
                         </span>
                     </div>
                 </div>
@@ -260,7 +260,7 @@ export function MultiStageAIProgress({
                     {/* Stage connector */}
                     {index < stages.length - 1 && (
                         <div className="flex justify-center mt-2">
-                            <div className="w-px h-4 bg-gradient-to-b from-blue-500 to-purple-500" />
+                            <div className="w-px h-4 bg-gradient-to-b from-blue-500 to-[#ebd79a]/100" />
                         </div>
                     )}
                 </div>

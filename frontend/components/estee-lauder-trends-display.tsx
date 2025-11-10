@@ -9,14 +9,14 @@ import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { ChevronDown, ChevronUp, TrendingUp, Users, Heart } from "lucide-react"
-import { SephoraTrendAgentResponse, TrendItem } from "@/lib/api"
+import { EsteeLauderTrendAgentResponse, TrendItem } from "@/lib/api"
 
-interface SephoraTrendsDisplayProps {
-    data: SephoraTrendAgentResponse | null
+interface EsteeLauderTrendsDisplayProps {
+    data: EsteeLauderTrendAgentResponse | null
     isLoading?: boolean
 }
 
-export function SephoraTrendsDisplay({ data, isLoading }: SephoraTrendsDisplayProps) {
+export function EsteeLauderTrendsDisplay({ data, isLoading }: EsteeLauderTrendsDisplayProps) {
     const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['makeup']))
 
     const toggleSection = (section: string) => {
@@ -35,16 +35,16 @@ export function SephoraTrendsDisplay({ data, isLoading }: SephoraTrendsDisplayPr
             <div className="space-y-6">
                 <div className="text-center py-12">
                     <div className="relative">
-                        <div className="animate-spin rounded-full h-16 w-16 border-4 border-pink-200 border-t-pink-500 mx-auto mb-6"></div>
-                        <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-pink-300 animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+                        <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#ebd79a]/30 border-t-[#ebd79a]/100 mx-auto mb-6"></div>
+                        <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-[#ebd79a]/40 animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
                     </div>
                     <div className="space-y-2">
                         <h3 className="text-lg font-semibold text-foreground">Analyzing Beauty Trends</h3>
-                        <p className="text-muted-foreground">The Sephora Trend Agent is gathering insights from across the internet...</p>
+                        <p className="text-muted-foreground">The Estee Lauder Trend Agent is gathering insights from across the internet...</p>
                         <div className="flex justify-center space-x-1 mt-4">
-                            <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                            <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                            <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                            <div className="w-2 h-2 bg-[#ebd79a]/100 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                            <div className="w-2 h-2 bg-[#ebd79a]/100 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                            <div className="w-2 h-2 bg-[#ebd79a]/100 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                         </div>
                     </div>
                 </div>
@@ -59,7 +59,7 @@ export function SephoraTrendsDisplay({ data, isLoading }: SephoraTrendsDisplayPr
                     <TrendingUp className="h-12 w-12 text-muted-foreground mb-4" />
                     <h3 className="text-lg font-semibold mb-2">No Analysis Data</h3>
                     <p className="text-muted-foreground text-center">
-                        Run a trend analysis to see the latest beauty insights from the Sephora Trend Agent.
+                        Run a trend analysis to see the latest beauty insights from the Estee Lauder Trend Agent.
                     </p>
                 </CardContent>
             </Card>
@@ -71,13 +71,13 @@ export function SephoraTrendsDisplay({ data, isLoading }: SephoraTrendsDisplayPr
     return (
         <div className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
             {/* Header */}
-            <Card className="bg-gradient-to-r from-pink-50 to-purple-50 border-pink-200 hover:shadow-lg transition-all duration-300 animate-in fade-in-0 slide-in-from-top-4 duration-500">
+            <Card className="bg-gradient-to-r from-[#ebd79a]/10 to-[#ebd79a]/10 border-[#ebd79a]/30 hover:shadow-lg transition-all duration-300 animate-in fade-in-0 slide-in-from-top-4 duration-500">
                 <CardHeader>
-                    <CardTitle className="text-2xl font-bold text-pink-800 flex items-center gap-2">
+                    <CardTitle className="text-2xl font-bold text-[#040a2b] flex items-center gap-2">
                         <TrendingUp className="h-6 w-6 animate-pulse" />
                         Beauty Trend Analysis
                     </CardTitle>
-                    <CardDescription className="text-pink-700 text-base">
+                    <CardDescription className="text-[#040a2b] text-base">
                         {report.report_summary}
                     </CardDescription>
                 </CardHeader>

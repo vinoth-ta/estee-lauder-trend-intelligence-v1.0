@@ -152,7 +152,7 @@ export function ProductCurationDisplay({
             <ShoppingBagIcon className="size-5" />
             Product Curation
           </CardTitle>
-          <CardDescription>Select a trend to see curated Sephora products</CardDescription>
+          <CardDescription>Select a trend to see curated Estee Lauder products</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -174,7 +174,7 @@ export function ProductCurationDisplay({
           <div className="space-y-1">
             <CardTitle className="flex items-center gap-2">
               <ShoppingBagIcon className="size-5" />
-              Curated Sephora Products
+              Curated Estee Lauder Products
               <Badge variant="secondary" className="ml-2">
                 {filteredProducts.length} products
               </Badge>
@@ -279,7 +279,7 @@ export function ProductCurationDisplay({
                     </Badge>
                   )}
                   {product.isExclusive && (
-                    <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 text-xs">
+                    <Badge className="bg-[#ebd79a]/20 text-[#040a2b] dark:bg-[#040a2b] dark:text-[#ebd79a]/30 text-xs">
                       Exclusive
                     </Badge>
                   )}

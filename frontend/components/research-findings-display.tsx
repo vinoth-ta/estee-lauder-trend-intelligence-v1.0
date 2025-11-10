@@ -187,11 +187,11 @@ export function ResearchFindingsDisplay({ data, isLoading }: ResearchFindingsDis
                                     <div className="text-2xl font-bold text-green-600">{citations.length}</div>
                                     <div className="text-sm text-green-700">In-text Citations</div>
                                 </div>
-                                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                                    <div className="text-2xl font-bold text-purple-600">
+                                <div className="text-center p-4 bg-[#ebd79a]/10 rounded-lg">
+                                    <div className="text-2xl font-bold text-[#040a2b]">
                                         {Math.round((citations.length / content.split(' ').length) * 100 * 100) / 100}%
                                     </div>
-                                    <div className="text-sm text-purple-700">Citation Density</div>
+                                    <div className="text-sm text-[#040a2b]">Citation Density</div>
                                 </div>
                             </div>
                         </CardContent>

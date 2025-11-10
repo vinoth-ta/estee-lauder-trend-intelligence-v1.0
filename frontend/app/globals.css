@@ -4,51 +4,51 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Modern, elegant Sephora-inspired pink theme */
+  /* Luxurious Estee Lauder-inspired theme with Navy and Gold */
   --background: oklch(1 0 0);
   /* White */
-  --foreground: oklch(0 0 0);
-  /* Black */
+  --foreground: oklch(0.11 0.02 250);
+  /* Dark Navy Blue #040a2b */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0 0 0);
+  --card-foreground: oklch(0.11 0.02 250);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0 0 0);
-  --primary: oklch(0 0 0);
-  /* Black as primary */
+  --popover-foreground: oklch(0.11 0.02 250);
+  --primary: oklch(0.11 0.02 250);
+  /* Dark Navy Blue as primary */
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.96 0 0);
   /* Light gray for secondary elements */
-  --secondary-foreground: oklch(0 0 0);
+  --secondary-foreground: oklch(0.11 0.02 250);
   --muted: oklch(0.96 0 0);
   --muted-foreground: oklch(0.45 0 0);
-  --accent: oklch(0.65 0.15 320);
-  /* Sephora Pink as accent */
-  --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.65 0.15 320);
+  --accent: oklch(0.85 0.05 75);
+  /* Estee Lauder Gold #ebd79a as accent */
+  --accent-foreground: oklch(0.11 0.02 250);
+  --destructive: oklch(0.55 0.2 25);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.92 0 0);
   --input: oklch(0.92 0 0);
-  --ring: oklch(0.65 0.15 320 / 0.5);
-  --chart-1: oklch(0.65 0.15 320);
-  --chart-2: oklch(0 0 0);
+  --ring: oklch(0.85 0.05 75 / 0.5);
+  --chart-1: oklch(0.85 0.05 75);
+  --chart-2: oklch(0.11 0.02 250);
   --chart-3: oklch(0.75 0 0);
   --chart-4: oklch(0.35 0 0);
   --chart-5: oklch(0.65 0 0);
   --radius: 0.5rem;
-  /* Slightly smaller radius for a sharper look */
-  --sidebar: oklch(0.05 0 0);
-  /* Dark sidebar */
+  /* Slightly smaller radius for a refined look */
+  --sidebar: oklch(0.11 0.02 250);
+  /* Dark Navy sidebar */
   --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.65 0.15 320);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.1 0 0);
+  --sidebar-primary: oklch(0.85 0.05 75);
+  --sidebar-primary-foreground: oklch(0.11 0.02 250);
+  --sidebar-accent: oklch(0.15 0.02 250);
   --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.15 0 0);
-  --sidebar-ring: oklch(0.65 0.15 320 / 0.5);
+  --sidebar-border: oklch(0.20 0.02 250);
+  --sidebar-ring: oklch(0.85 0.05 75 / 0.5);
 }
 
 .dark {
-  /* Dark mode with inverted Sephora pink colors */
+  /* Dark mode with Estee Lauder gold accents */
   --background: oklch(0.05 0 0);
   --foreground: oklch(0.95 0 0);
   --card: oklch(0.1 0 0);
@@ -61,27 +61,27 @@
   --secondary-foreground: oklch(0.95 0 0);
   --muted: oklch(0.15 0 0);
   --muted-foreground: oklch(0.65 0 0);
-  --accent: oklch(0.65 0.15 320);
-  /* Sephora Pink as accent */
-  --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.65 0.15 320);
+  --accent: oklch(0.85 0.05 75);
+  /* Estee Lauder Gold as accent */
+  --accent-foreground: oklch(0.11 0.02 250);
+  --destructive: oklch(0.55 0.2 25);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.15 0 0);
   --input: oklch(0.15 0 0);
-  --ring: oklch(0.65 0.15 320 / 0.5);
-  --chart-1: oklch(0.65 0.15 320);
+  --ring: oklch(0.85 0.05 75 / 0.5);
+  --chart-1: oklch(0.85 0.05 75);
   --chart-2: oklch(0.85 0 0);
   --chart-3: oklch(0.75 0 0);
   --chart-4: oklch(0.65 0 0);
   --chart-5: oklch(0.55 0 0);
   --sidebar: oklch(0 0 0);
   --sidebar-foreground: oklch(0.95 0 0);
-  --sidebar-primary: oklch(0.65 0.15 320);
-  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(0.85 0.05 75);
+  --sidebar-primary-foreground: oklch(0.11 0.02 250);
   --sidebar-accent: oklch(0.1 0 0);
   --sidebar-accent-foreground: oklch(0.95 0 0);
   --sidebar-border: oklch(0.1 0 0);
-  --sidebar-ring: oklch(0.65 0.15 320 / 0.5);
+  --sidebar-ring: oklch(0.85 0.05 75 / 0.5);
 }
 
 @theme inline {
@@ -134,17 +134,17 @@
     @apply bg-background text-foreground;
   }
 
-  /* Sephora-inspired typography */
-  .sephora-font {
+  /* Estee Lauder-inspired typography */
+  .estee-lauder-font {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-weight: 600;
     letter-spacing: -0.025em;
   }
 
-  .sephora-title {
+  .estee-lauder-title {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-weight: 700;
-    letter-spacing: -0.05em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
   }
 
@@ -159,7 +159,7 @@
 
   .sidebar-item[data-active="true"] {
     transform: translateX(4px);
-    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+    box-shadow: 0 4px 12px rgba(235, 215, 154, 0.3);
   }
 
   /* Smooth header transitions */

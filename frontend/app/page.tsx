@@ -69,12 +69,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { TrendAnalysisInterface } from "@/components/trend-analysis-interface"
 import { ComprehensiveTrendsDisplay } from "@/components/comprehensive-trends-display"
-import { SephoraTrendsDisplay } from "@/components/sephora-trends-display"
+import { EsteeLauderTrendsDisplay } from "@/components/estee-lauder-trends-display"
 import { ResearchFindingsDisplay } from "@/components/research-findings-display"
 import { EnhancedTrendsDisplay } from "@/components/enhanced-trends-display"
 import { TrendFocusedDisplay } from "@/components/trend-focused-display"
 import { AITrendApplication } from "@/components/ai-trend-application"
-import { sephoraAPI, withRetry, type ProductData, type AnalysisConfig, type SephoraTrendAgentResponse, type ResearchFindingsData, type StructuredTrendsData, type SSEResponseData } from "@/lib/api"
+import { esteeLauderAPI, withRetry, type ProductData, type AnalysisConfig, type EsteeLauderTrendAgentResponse, type ResearchFindingsData, type StructuredTrendsData, type SSEResponseData } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { saveTrendsToStorage } from "@/lib/trend-storage"
 
@@ -142,7 +142,7 @@ interface TrendsResponse {
   }
 }
 
-export default function SephoraTrendAnalyzer() {
+export default function EsteeLauderTrendAnalyzer() {
   const [activeTab, setActiveTab] = useState("trend-analyzer")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisProgress, setAnalysisProgress] = useState<AnalysisProgress | undefined>()
@@ -151,7 +151,7 @@ export default function SephoraTrendAnalyzer() {
   const [isLoadingProducts, setIsLoadingProducts] = useState(false)
   const [products, setProducts] = useState<ProductData[]>([])
   const [trendsData, setTrendsData] = useState<TrendsResponse | null>(null)
-  const [sephoraTrendData, setSephoraTrendData] = useState<SephoraTrendAgentResponse | null>(null)
+  const [esteeLauderTrendData, setEsteeLauderTrendData] = useState<EsteeLauderTrendAgentResponse | null>(null)
   const [researchFindingsData, setResearchFindingsData] = useState<ResearchFindingsData | null>(null)
   const [structuredTrendsData, setStructuredTrendsData] = useState<StructuredTrendsData | null>(null)
   const [currentAnalysisId, setCurrentAnalysisId] = useState<string | null>(null)
@@ -304,7 +304,7 @@ export default function SephoraTrendAnalyzer() {
     setIsAnalyzing(true)
     setAnalysisComplete(false)
     setTrendsData(null)
-    setSephoraTrendData(null)
+    setEsteeLauderTrendData(null)
     setResearchFindingsData(null)
     setStructuredTrendsData(null)
     setCurrentAnalysisId(null)
@@ -320,18 +320,18 @@ export default function SephoraTrendAnalyzer() {
     ]
 
     try {
-      // Step 1: Create session with sephora trend agent
+      // Step 1: Create session with estee lauder trend agent
       setAnalysisProgress(stages[0])
 
       // Generate unique session ID
       const userId = "user"
-      const sessionId = `sephora-session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      const sessionId = `estee-lauder-session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
       const sessionResponse = await fetch("/api/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          appName: "sephora_trend_agent",
+          appName: "estee_lauder_trend_agent",
           userId,
           sessionId,
         }),
@@ -365,7 +365,7 @@ export default function SephoraTrendAnalyzer() {
           method: "POST",
           headers,
           body: JSON.stringify({
-            appName: "sephora_trend_agent",
+            appName: "estee_lauder_trend_agent",
             userId,
             sessionId,
             newMessage: {
@@ -421,15 +421,15 @@ export default function SephoraTrendAnalyzer() {
                 }
 
                 // Handle different types of responses based on author
-                if (data.author === 'sephora_trend_research_agent') {
+                if (data.author === 'estee_lauder_trend_research_agent') {
                   // Handle research findings with citations
                   if (data.actions?.stateDelta) {
                     const stateDelta = data.actions.stateDelta
 
                     // Check for research findings with citations
-                    if (stateDelta.sephora_trend_research_findings_with_citations && stateDelta.sources && stateDelta.url_to_short_id) {
+                    if (stateDelta.estee_lauder_trend_research_findings_with_citations && stateDelta.sources && stateDelta.url_to_short_id) {
                       const researchData: ResearchFindingsData = {
-                        content: stateDelta.sephora_trend_research_findings_with_citations,
+                        content: stateDelta.estee_lauder_trend_research_findings_with_citations,
                         sources: stateDelta.sources,
                         url_to_short_id: stateDelta.url_to_short_id
                       }
@@ -443,15 +443,15 @@ export default function SephoraTrendAnalyzer() {
                   }
                 } else if (data.author === 'output_composer_agent') {
                   // Handle structured trends data
-                  if (data.actions?.stateDelta?.sephora_trends_report) {
-                    const trendsData = data.actions.stateDelta.sephora_trends_report
+                  if (data.actions?.stateDelta?.estee_lauder_trends_report) {
+                    const trendsData = data.actions.stateDelta.estee_lauder_trends_report
                     setStructuredTrendsData(trendsData)
                     saveTrendsToStorage(trendsData)
                     setAnalysisPhase('complete')
                     setAnalysisComplete(true)
                     toast({
                       title: "Analysis Complete",
-                      description: "Successfully analyzed beauty trends using Sephora Trend Agent.",
+                      description: "Successfully analyzed beauty trends using Estee Lauder Trend Agent.",
                     })
                     break
                   }
@@ -468,21 +468,21 @@ export default function SephoraTrendAnalyzer() {
                     if (jsonMatch) {
                       const trendData = JSON.parse(jsonMatch[0])
 
-                      // Check if this is the sephora trend agent response format
+                      // Check if this is the estee lauder trend agent response format
                       if (trendData.report_summary && trendData.trends && trendData.trends.makeup_trends && trendData.trends.skincare_trends && trendData.trends.hair_trends) {
                         // Transform the response to match our expected format
-                        const sephoraResponse: SephoraTrendAgentResponse = {
+                        const esteeLauderResponse: EsteeLauderTrendAgentResponse = {
                           thinking: "Analysis completed successfully",
                           report: {
                             report_summary: trendData.report_summary,
                             trends: trendData.trends
                           }
                         }
-                        setSephoraTrendData(sephoraResponse)
+                        setEsteeLauderTrendData(esteeLauderResponse)
                         setAnalysisComplete(true)
                         toast({
                           title: "Analysis Complete",
-                          description: "Successfully analyzed beauty trends using Sephora Trend Agent.",
+                          description: "Successfully analyzed beauty trends using Estee Lauder Trend Agent.",
                         })
                         break
                       } else {
@@ -533,7 +533,7 @@ export default function SephoraTrendAnalyzer() {
       }
 
     } catch (error) {
-      console.warn("Sephora trend agent unavailable, using mock data:", error)
+      console.warn("Estee Lauder trend agent unavailable, using mock data:", error)
 
       for (const stage of stages) {
         setAnalysisProgress(stage)
@@ -544,7 +544,7 @@ export default function SephoraTrendAnalyzer() {
 
       toast({
         title: "Demo Mode",
-        description: "Sephora trend agent unavailable. Using sample data for demonstration.",
+        description: "Estee Lauder trend agent unavailable. Using sample data for demonstration.",
         variant: "default",
       })
     }
@@ -560,7 +560,7 @@ export default function SephoraTrendAnalyzer() {
 
     try {
       const curationResponse = await withRetry(() =>
-        sephoraAPI.curateProducts({
+        esteeLauderAPI.curateProducts({
           trend_id: trendName,
           trend_name: trendName,
           max_products: 12,
@@ -628,7 +628,7 @@ export default function SephoraTrendAnalyzer() {
             rating: 4.5,
             reviews_count: 2847,
             availability: "in_stock",
-            sephora_url: "https://sephora.com/product/fenty-beauty-gloss-bomb",
+            esteelauder_url: "https://esteelauder.com/product/fenty-beauty-gloss-bomb",
             relevance_score: 94,
             trend_alignment: {
               keywords_matched: ["glossy", "luminous"],
@@ -644,7 +644,7 @@ export default function SephoraTrendAnalyzer() {
             rating: 4.8,
             reviews_count: 1923,
             availability: "in_stock",
-            sephora_url: "https://sephora.com/product/charlotte-tilbury-pillow-talk",
+            esteelauder_url: "https://esteelauder.com/product/charlotte-tilbury-pillow-talk",
             relevance_score: 89,
             trend_alignment: {
               keywords_matched: ["matte", "sophisticated"],
@@ -660,7 +660,7 @@ export default function SephoraTrendAnalyzer() {
             rating: 4.7,
             reviews_count: 3156,
             availability: "low_stock",
-            sephora_url: "https://sephora.com/product/rare-beauty-soft-pinch-blush",
+            esteelauder_url: "https://esteelauder.com/product/rare-beauty-soft-pinch-blush",
             relevance_score: 91,
             trend_alignment: {
               keywords_matched: ["natural", "blendable"],
@@ -725,7 +725,7 @@ export default function SephoraTrendAnalyzer() {
   const handleReset = () => {
     setAnalysisComplete(false)
     setTrendsData(null)
-    setSephoraTrendData(null)
+    setEsteeLauderTrendData(null)
     setResearchFindingsData(null)
     setStructuredTrendsData(null)
     setSelectedTrend(null)
@@ -737,7 +737,7 @@ export default function SephoraTrendAnalyzer() {
 
   const handleAddToCart = async (productId: string) => {
     try {
-      const result = await withRetry(() => sephoraAPI.addToCart(productId))
+      const result = await withRetry(() => esteeLauderAPI.addToCart(productId))
 
       if (result.success) {
         toast({
@@ -757,7 +757,7 @@ export default function SephoraTrendAnalyzer() {
 
   const handleAddToWishlist = async (productId: string) => {
     try {
-      const result = await withRetry(() => sephoraAPI.addToWishlist(productId))
+      const result = await withRetry(() => esteeLauderAPI.addToWishlist(productId))
 
       if (result.success) {
         toast({
@@ -798,8 +798,8 @@ export default function SephoraTrendAnalyzer() {
       badge: "AI",
     },
     {
-      id: "sephora-bundles",
-      title: "Sephora Bundles",
+      id: "estee-lauder-bundles",
+      title: "Estee Lauder Collections",
       icon: PackageIcon,
       description: "AI-curated product bundles",
       badge: "Soon",
@@ -896,7 +896,7 @@ export default function SephoraTrendAnalyzer() {
     },
     {
       id: "fav-2",
-      title: "Sephora Bundle Library",
+      title: "Estee Lauder Collection Library",
       icon: PackageIcon,
       description: "Saved AI-curated bundles",
     },
@@ -920,15 +920,15 @@ export default function SephoraTrendAnalyzer() {
         <Sidebar className="border-r border-gray-800 w-72 flex-shrink-0 bg-gradient-to-b from-gray-900 to-black">
           <SidebarHeader className="border-b border-gray-800 bg-gradient-to-b from-gray-900 to-black">
             <div className="flex items-center gap-3 px-4 py-4">
-              <div className="flex size-12 items-center justify-center">
+              <div className="flex size-14 items-center justify-center bg-white rounded-lg p-2">
                 <img
-                  src="/logo.jpeg"
-                  alt="Sephora"
+                  src="/estee-lauder-logo.svg"
+                  alt="Estee Lauder"
                   className="w-full h-full object-contain"
                 />
               </div>
               <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-xl sephora-title text-white tracking-tight truncate">SEPHORA</span>
+                <span className="text-xl estee-lauder-title text-white tracking-tight truncate">ESTÉE LAUDER</span>
                 <span className="text-xs text-gray-400 font-medium truncate">Beauty Intelligence Platform</span>
               </div>
             </div>
@@ -947,14 +947,14 @@ export default function SephoraTrendAnalyzer() {
                       <SidebarMenuButton
                         isActive={activeTab === item.id}
                         onClick={() => setActiveTab(item.id)}
-                        className="w-full rounded-lg px-3 py-3 text-left transition-all hover:bg-gray-800 data-[active=true]:bg-pink-600 data-[active=true]:text-white min-h-[3.5rem] group text-white sidebar-item"
+                        className="w-full rounded-lg px-3 py-3 text-left transition-all hover:bg-gray-800 data-[active=true]:bg-[#040a2b] data-[active=true]:text-[#ebd79a] min-h-[3.5rem] group text-white sidebar-item"
                       >
                         <item.icon className="size-5 shrink-0" />
                         <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
                           <div className="flex items-center gap-2 w-full">
                             <span className="font-semibold text-sm leading-tight truncate">{item.title}</span>
                             {item.badge && (
-                              <Badge variant="secondary" className="text-xs px-1.5 py-0.5 bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300">
+                              <Badge variant="secondary" className="text-xs px-1.5 py-0.5 bg-[#ebd79a] text-[#040a2b] dark:bg-[#040a2b] dark:text-[#ebd79a]">
                                 {item.badge}
                               </Badge>
                             )}
@@ -988,7 +988,7 @@ export default function SephoraTrendAnalyzer() {
                           <div className="flex items-center gap-2 w-full">
                             <span className="font-medium text-sm leading-tight truncate">{item.title}</span>
                             {item.badge && (
-                              <Badge variant="outline" className="text-xs px-1.5 py-0.5 ml-auto border-pink-600 text-pink-400">
+                              <Badge variant="outline" className="text-xs px-1.5 py-0.5 ml-auto border-[#ebd79a] text-[#ebd79a]">
                                 {item.badge}
                               </Badge>
                             )}
@@ -1021,7 +1021,7 @@ export default function SephoraTrendAnalyzer() {
                         <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
                           <div className="flex items-center gap-2 w-full">
                             <span className="font-medium text-sm leading-tight truncate">{item.title}</span>
-                            <Badge variant="outline" className="text-xs px-1.5 py-0.5 ml-auto border-pink-600 text-pink-400">
+                            <Badge variant="outline" className="text-xs px-1.5 py-0.5 ml-auto border-[#ebd79a] text-[#ebd79a]">
                               {item.category}
                             </Badge>
                           </div>
@@ -1062,71 +1062,82 @@ export default function SephoraTrendAnalyzer() {
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter className="border-t border-gray-800 p-4 bg-gradient-to-b from-gray-900 to-black">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-pink-600 text-white text-sm font-semibold">
-                  SC
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-sm font-semibold text-white truncate">Sarah Chen</span>
-                <span className="text-xs text-gray-400 truncate">Beauty Intelligence Specialist</span>
+          <SidebarFooter className="border-t border-gray-800 bg-gradient-to-b from-gray-900 to-black">
+            <div className="p-4 border-b border-gray-800">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-[#040a2b] text-[#ebd79a] text-sm font-semibold">
+                    SC
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-sm font-semibold text-white truncate">Sarah Chen</span>
+                  <span className="text-xs text-gray-400 truncate">Beauty Intelligence Specialist</span>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white hover:bg-gray-800">
+                      <SettingsIcon className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem>
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <SettingsIcon className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-white hover:bg-gray-800">
-                    <SettingsIcon className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem>
-                    <UserIcon className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <SettingsIcon className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            </div>
+
+            {/* Tiger Analytics Attribution */}
+            <div className="px-4 py-4 flex items-center justify-center bg-white border-t border-gray-700">
+              <img
+                src="/tiger-analytics-logo.svg"
+                alt="Tiger Analytics"
+                className="h-8 w-auto"
+              />
             </div>
           </SidebarFooter>
         </Sidebar>
 
         <SidebarInset className="flex-1 min-w-0 relative">
-          <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 backdrop-blur-sm sticky top-0 z-30 px-6 bg-gradient-to-r from-white to-pink-50/50 shadow-sm">
+          <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 backdrop-blur-sm sticky top-0 z-30 px-6 bg-gradient-to-r from-white to-[#ebd79a]/10 shadow-sm">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="-ml-1 text-gray-600 hover:text-gray-900" />
               <Separator orientation="vertical" className="h-6 bg-gray-300" />
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-pink-600 header-icon">
-                  <SparklesIcon className="size-4 text-white" />
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#040a2b] header-icon">
+                  <SparklesIcon className="size-4 text-[#ebd79a]" />
                 </div>
                 <div className="flex flex-col">
                   <h1 className="text-lg font-bold text-gray-900 tracking-tight">
                     {activeTab === "trend-analyzer" ? "Trend Discovery" :
                       activeTab === "ai-trend-application" ? "Visual Trend Studio" :
-                        activeTab === "sephora-bundles" ? "Sephora Bundles" :
+                        activeTab === "estee-lauder-bundles" ? "Estee Lauder Collections" :
                           activeTab === "ai-insights" ? "AI Insights" :
                             activeTab === "customer-ai" ? "Customer AI" :
                               activeTab === "predictive-analytics" ? "Predictive Analytics" :
                                 activeTab === "dashboard" ? "AI Dashboard" :
-                                  "Sephora AI Intelligence"}
+                                  "Estee Lauder AI Intelligence"}
                   </h1>
                   <p className="text-sm text-gray-600">
                     {activeTab === "trend-analyzer" ? "AI-Powered Trend Analysis" :
                       activeTab === "ai-trend-application" ? "Apply AI Trends to Images" :
-                        activeTab === "sephora-bundles" ? "AI-Curated Product Bundles" :
+                        activeTab === "estee-lauder-bundles" ? "AI-Curated Product Bundles" :
                           activeTab === "ai-insights" ? "Advanced Beauty Analytics" :
                             activeTab === "customer-ai" ? "AI-Driven Customer Analysis" :
                               activeTab === "predictive-analytics" ? "AI Forecasting & Predictions" :
                                 activeTab === "dashboard" ? "Executive Overview & AI Insights" :
-                                  "Sephora AI Intelligence Platform"}
+                                  "Estee Lauder AI Intelligence Platform"}
                   </p>
                 </div>
               </div>
@@ -1137,13 +1148,13 @@ export default function SephoraTrendAnalyzer() {
                 <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-gray-400" />
                 <Input
                   placeholder="Search trends, products..."
-                  className="pl-10 w-56 h-10 bg-gray-50 border-gray-200 text-sm focus:bg-white focus:border-pink-300 focus:ring-pink-200"
+                  className="pl-10 w-56 h-10 bg-gray-50 border-gray-200 text-sm focus:bg-white focus:border-[#ebd79a] focus:ring-[#ebd79a]/20"
                 />
               </div>
 
               <Button variant="ghost" size="sm" className="relative h-10 w-10 text-gray-600 hover:text-gray-900 hover:bg-gray-100 header-icon">
                 <BellIcon className="size-4" />
-                <Badge className="absolute -top-1 -right-1 size-5 p-0 text-xs bg-pink-600 text-white flex items-center justify-center rounded-full">
+                <Badge className="absolute -top-1 -right-1 size-5 p-0 text-xs bg-[#040a2b] text-[#ebd79a] flex items-center justify-center rounded-full">
                   3
                 </Badge>
               </Button>
@@ -1156,7 +1167,7 @@ export default function SephoraTrendAnalyzer() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-gray-100 header-icon">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-pink-600 text-white text-sm font-semibold">
+                      <AvatarFallback className="bg-[#040a2b] text-[#ebd79a] text-sm font-semibold">
                         SC
                       </AvatarFallback>
                     </Avatar>
@@ -1166,8 +1177,8 @@ export default function SephoraTrendAnalyzer() {
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">Sarah Chen</p>
-                      <p className="text-xs leading-none text-gray-500">sarah.chen@sephora.com</p>
-                      <Badge variant="secondary" className="w-fit text-xs mt-1 bg-pink-100 text-pink-700">
+                      <p className="text-xs leading-none text-gray-500">sarah.chen@esteelauder.com</p>
+                      <Badge variant="secondary" className="w-fit text-xs mt-1 bg-[#ebd79a]/20 text-[#040a2b]">
                         Beauty Analyst
                       </Badge>
                     </div>
@@ -1190,7 +1201,7 @@ export default function SephoraTrendAnalyzer() {
             </div>
           </header>
 
-          <main className="flex-1 p-6 bg-gradient-to-br from-white via-pink-50/30 to-purple-50/20 min-h-screen">
+          <main className="flex-1 p-6 bg-gradient-to-br from-white via-gray-50 to-[#ebd79a]/5 min-h-screen">
             {activeTab === "trend-analyzer" && (
               <div className="space-y-6 max-w-7xl mx-auto">
                 <TrendAnalysisInterface
@@ -1226,14 +1237,14 @@ export default function SephoraTrendAnalyzer() {
                 )}
 
                 {/* Fallback to old components */}
-                {!researchFindingsData && !structuredTrendsData && sephoraTrendData && (
-                  <SephoraTrendsDisplay
-                    data={sephoraTrendData}
+                {!researchFindingsData && !structuredTrendsData && esteeLauderTrendData && (
+                  <EsteeLauderTrendsDisplay
+                    data={esteeLauderTrendData}
                     isLoading={isAnalyzing}
                   />
                 )}
 
-                {!researchFindingsData && !structuredTrendsData && !sephoraTrendData && (
+                {!researchFindingsData && !structuredTrendsData && !esteeLauderTrendData && (
                   <ComprehensiveTrendsDisplay
                     data={trendsData}
                     onTrendClick={handleTrendClick}
@@ -1250,15 +1261,15 @@ export default function SephoraTrendAnalyzer() {
               </div>
             )}
 
-            {activeTab === "sephora-bundles" && (
+            {activeTab === "estee-lauder-bundles" && (
               <div className="max-w-2xl mx-auto">
                 <Card className="border-2 border-dashed border-muted-foreground/20">
                   <CardHeader className="text-center pb-4">
-                    <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-pink-100 to-purple-100 shadow-lg">
-                      <PackageIcon className="size-8 text-pink-600" />
+                    <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-[#ebd79a]/20 to-[#040a2b]/20 shadow-lg">
+                      <PackageIcon className="size-8 text-[#040a2b]" />
                     </div>
-                    <CardTitle className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent sephora-font">
-                      Sephora Bundles
+                    <CardTitle className="text-2xl font-bold bg-gradient-to-r from-[#040a2b] to-[#ebd79a] bg-clip-text text-transparent estee-lauder-font">
+                      Estee Lauder Collections
                     </CardTitle>
                     <CardDescription className="text-base text-muted-foreground">
                       AI-Curated Product Bundles Based on Trending Beauty Styles
@@ -1267,22 +1278,22 @@ export default function SephoraTrendAnalyzer() {
                   <CardContent className="text-center">
                     <p className="text-muted-foreground mb-6">
                       Create intelligent product bundles by selecting a trend. Our AI will analyze the trend and curate
-                      the perfect combination of Sephora products to achieve that look, including makeup, skincare, and tools.
+                      the perfect combination of Estee Lauder products to achieve that look, including makeup, skincare, and tools.
                     </p>
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-4 border rounded-lg bg-gradient-to-br from-pink-50 to-purple-50">
-                          <h3 className="font-semibold text-pink-700 mb-2">Trend-Based Bundles</h3>
+                        <div className="p-4 border rounded-lg bg-gradient-to-br from-[#ebd79a]/10 to-[#040a2b]/10">
+                          <h3 className="font-semibold text-[#040a2b] mb-2">Trend-Based Bundles</h3>
                           <p className="text-sm text-gray-600">Select any beauty trend and get AI-curated product recommendations</p>
                         </div>
-                        <div className="p-4 border rounded-lg bg-gradient-to-br from-pink-50 to-purple-50">
-                          <h3 className="font-semibold text-pink-700 mb-2">Smart Pricing</h3>
+                        <div className="p-4 border rounded-lg bg-gradient-to-br from-[#ebd79a]/10 to-[#040a2b]/10">
+                          <h3 className="font-semibold text-[#040a2b] mb-2">Smart Pricing</h3>
                           <p className="text-sm text-gray-600">Optimized bundles with competitive pricing and value analysis</p>
                         </div>
                       </div>
                     </div>
                     <div className="mt-6">
-                      <Button disabled className="mr-2 bg-pink-600 hover:bg-pink-700">
+                      <Button disabled className="mr-2 bg-[#040a2b] hover:bg-[#040a2b]/90">
                         <PackageIcon className="w-4 h-4 mr-2" />
                         Coming Soon
                       </Button>
@@ -1404,7 +1415,7 @@ export default function SephoraTrendAnalyzer() {
               </div>
             )}
 
-            {activeTab !== "trend-analyzer" && activeTab !== "dashboard" && activeTab !== "ai-trend-application" && activeTab !== "sephora-bundles" && (
+            {activeTab !== "trend-analyzer" && activeTab !== "dashboard" && activeTab !== "ai-trend-application" && activeTab !== "estee-lauder-bundles" && (
               <div className="max-w-2xl mx-auto">
                 <Card className="border-2 border-dashed border-muted-foreground/20">
                   <CardHeader className="text-center pb-4">

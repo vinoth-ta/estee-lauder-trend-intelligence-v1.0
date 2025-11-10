@@ -82,16 +82,16 @@ export function EnhancedTrendsDisplay({ data, isLoading }: EnhancedTrendsDisplay
             <div className="space-y-6">
                 <div className="text-center py-12">
                     <div className="relative">
-                        <div className="animate-spin rounded-full h-16 w-16 border-4 border-pink-200 border-t-pink-500 mx-auto mb-6"></div>
-                        <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-pink-300 animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+                        <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#ebd79a]/30 border-t-[#ebd79a]/100 mx-auto mb-6"></div>
+                        <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-[#ebd79a]/40 animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
                     </div>
                     <div className="space-y-2">
                         <h3 className="text-lg font-semibold text-foreground">Structuring Trend Data</h3>
                         <p className="text-muted-foreground">Organizing research findings into actionable insights...</p>
                         <div className="flex justify-center space-x-1 mt-4">
-                            <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                            <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                            <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                            <div className="w-2 h-2 bg-[#ebd79a]/100 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                            <div className="w-2 h-2 bg-[#ebd79a]/100 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                            <div className="w-2 h-2 bg-[#ebd79a]/100 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                         </div>
                     </div>
                 </div>
@@ -119,15 +119,15 @@ export function EnhancedTrendsDisplay({ data, isLoading }: EnhancedTrendsDisplay
     return (
         <div className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
             {/* Header */}
-            <Card className="bg-gradient-to-r from-pink-50 to-rose-50 border-pink-200 hover:shadow-lg transition-all duration-300">
+            <Card className="bg-gradient-to-r from-[#ebd79a]/10 to-[#ebd79a]/10 border-[#ebd79a]/30 hover:shadow-lg transition-all duration-300">
                 <CardHeader>
                     <div className="flex items-start justify-between">
                         <div className="flex-1">
-                            <CardTitle className="text-2xl font-bold text-pink-800 flex items-center gap-2">
+                            <CardTitle className="text-2xl font-bold text-[#040a2b] flex items-center gap-2">
                                 <Sparkles className="h-6 w-6 animate-pulse" />
                                 Structured Trend Analysis
                             </CardTitle>
-                            <CardDescription className="text-pink-700 text-base mt-2">
+                            <CardDescription className="text-[#040a2b] text-base mt-2">
                                 {report_summary}
                             </CardDescription>
                         </div>
@@ -152,11 +152,11 @@ export function EnhancedTrendsDisplay({ data, isLoading }: EnhancedTrendsDisplay
                 <Card className="hover:shadow-md transition-all duration-300">
                     <CardContent className="p-4">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-pink-100 rounded-lg">
-                                <Palette className="h-5 w-5 text-pink-600" />
+                            <div className="p-2 bg-[#ebd79a]/20 rounded-lg">
+                                <Palette className="h-5 w-5 text-[#040a2b]" />
                             </div>
                             <div>
-                                <div className="text-2xl font-bold text-pink-600">{trends.makeup_trends.length}</div>
+                                <div className="text-2xl font-bold text-[#040a2b]">{trends.makeup_trends.length}</div>
                                 <div className="text-sm text-muted-foreground">Makeup Trends</div>
                             </div>
                         </div>
@@ -178,11 +178,11 @@ export function EnhancedTrendsDisplay({ data, isLoading }: EnhancedTrendsDisplay
                 <Card className="hover:shadow-md transition-all duration-300">
                     <CardContent className="p-4">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-purple-100 rounded-lg">
-                                <Scissors className="h-5 w-5 text-purple-600" />
+                            <div className="p-2 bg-[#ebd79a]/20 rounded-lg">
+                                <Scissors className="h-5 w-5 text-[#040a2b]" />
                             </div>
                             <div>
-                                <div className="text-2xl font-bold text-purple-600">{trends.hair_trends.length}</div>
+                                <div className="text-2xl font-bold text-[#040a2b]">{trends.hair_trends.length}</div>
                                 <div className="text-sm text-muted-foreground">Hair Trends</div>
                             </div>
                         </div>
@@ -281,11 +281,11 @@ function TrendCategorySection({
 }: TrendCategorySectionProps) {
     const colorClasses = {
         pink: {
-            bg: 'bg-pink-50',
-            border: 'border-pink-200',
-            text: 'text-pink-800',
-            icon: 'text-pink-600',
-            badge: 'bg-pink-100 text-pink-700'
+            bg: 'bg-[#ebd79a]/10',
+            border: 'border-[#ebd79a]/30',
+            text: 'text-[#040a2b]',
+            icon: 'text-[#040a2b]',
+            badge: 'bg-[#ebd79a]/20 text-[#040a2b]'
         },
         blue: {
             bg: 'bg-blue-50',
@@ -295,11 +295,11 @@ function TrendCategorySection({
             badge: 'bg-blue-100 text-blue-700'
         },
         purple: {
-            bg: 'bg-purple-50',
-            border: 'border-purple-200',
-            text: 'text-purple-800',
-            icon: 'text-purple-600',
-            badge: 'bg-purple-100 text-purple-700'
+            bg: 'bg-[#ebd79a]/10',
+            border: 'border-[#ebd79a]/30',
+            text: 'text-[#040a2b]',
+            icon: 'text-[#040a2b]',
+            badge: 'bg-[#ebd79a]/20 text-[#040a2b]'
         }
     }
 

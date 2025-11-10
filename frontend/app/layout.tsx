@@ -10,8 +10,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Sephora AI Trend Analyzer',
-  description: 'AI-Powered Trend Analysis for Beauty Professionals',
+  title: 'Estee Lauder AI Trend Analyzer',
+  description: 'Luxury AI-Powered Trend Analysis for Prestige Beauty',
   generator: 'v0.app',
 }
 

@@ -211,11 +211,11 @@ export function AITrendApplication() {
     const getCategoryColor = (category: string) => {
         switch (category) {
             case 'makeup':
-                return 'border-pink-200 bg-pink-50 hover:bg-pink-100'
+                return 'border-[#ebd79a]/30 bg-[#ebd79a]/10 hover:bg-[#ebd79a]/20'
             case 'skincare':
                 return 'border-green-200 bg-green-50 hover:bg-green-100'
             case 'hair':
-                return 'border-purple-200 bg-purple-50 hover:bg-purple-100'
+                return 'border-[#ebd79a]/30 bg-[#ebd79a]/10 hover:bg-[#ebd79a]/20'
             default:
                 return 'border-gray-200 bg-gray-50 hover:bg-gray-100'
         }
@@ -322,7 +322,7 @@ export function AITrendApplication() {
                                                         <div className="mb-3">
                                                             <div className="flex items-center gap-1 mb-1">
                                                                 <PackageIcon className="h-3 w-3 text-gray-400" />
-                                                                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Sephora Products</span>
+                                                                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Estee Lauder Products</span>
                                                             </div>
                                                             <div className="flex flex-wrap gap-1">
                                                                 {trend.key_products.slice(0, areProductsExpanded ? trend.key_products.length : 3).map((product, index) => (
@@ -425,7 +425,7 @@ export function AITrendApplication() {
                         <Button
                             onClick={handleApplyTrend}
                             disabled={!selectedTrend || isProcessing}
-                            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-[#040a2b] to-[#ebd79a] hover:from-[#040a2b] hover:to-[#040a2b] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isProcessing ? (
                                 <>
@@ -474,7 +474,7 @@ export function AITrendApplication() {
                         {/* AI Transformed Image */}
                         <div className="flex-1 space-y-3">
                             <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"></div>
+                                <div className="w-3 h-3 bg-gradient-to-r from-[#ebd79a]/100 to-[#ebd79a]/100 rounded-full"></div>
                                 <h4 className="font-semibold text-gray-900">AI Transformed</h4>
                                 {selectedTrend && (
                                     <Badge variant="secondary" className="ml-2">
@@ -484,10 +484,10 @@ export function AITrendApplication() {
                             </div>
                             <div className="relative bg-gray-100 rounded-xl overflow-hidden border-2 border-dashed border-gray-300 h-[400px]">
                                 {isProcessing ? (
-                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50">
+                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#ebd79a]/10 to-[#ebd79a]/10">
                                         <div className="text-center">
                                             <div className="animate-spin mb-4">
-                                                <Wand2Icon className="h-12 w-12 text-purple-600 mx-auto" />
+                                                <Wand2Icon className="h-12 w-12 text-[#040a2b] mx-auto" />
                                             </div>
                                             <h4 className="font-semibold text-gray-900 mb-2">AI is Working Its Magic</h4>
                                             <p className="text-sm text-gray-600 mb-4">
@@ -504,7 +504,7 @@ export function AITrendApplication() {
                                             alt="AI Transformed"
                                             className="w-full h-full object-cover object-top"
                                         />
-                                        <div className="absolute top-3 right-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                                        <div className="absolute top-3 right-3 bg-gradient-to-r from-[#040a2b] to-[#ebd79a] text-white px-3 py-1 rounded-full text-sm font-medium">
                                             AI Transformed
                                         </div>
                                     </div>

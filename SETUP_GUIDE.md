@@ -1,265 +1,591 @@
-# Beauty Intelligence Platform - Local Setup Guide
+# Estee Lauder Beauty Intelligence Platform - Setup Guide
 
-This guide will help you set up the Beauty Intelligence Platform on your local machine.
+This guide provides step-by-step instructions for setting up and running the Beauty Intelligence Platform locally using API key authentication.
 
-## Prerequisites
+## Table of Contents
 
-- **Python**: 3.10 or higher (managed by UV)
-- **Node.js**: v18 or higher
-- **npm**: Latest version
-- **UV**: Python package manager (will be installed automatically if not present)
+- [System Requirements](#system-requirements)
+- [Installation Steps](#installation-steps)
+- [API Key Configuration](#api-key-configuration)
+- [Running the Application](#running-the-application)
+- [Verifying the Setup](#verifying-the-setup)
+- [Troubleshooting](#troubleshooting)
 
-## Project Structure
+---
 
-```
-beauty-intelligence-platform/
-├── src/                      # Backend FastAPI application
-│   ├── app.py               # Main FastAPI app with AI image transformation
-│   └── sephora_trend_agent/ # Agent implementation
-├── frontend/                # Next.js frontend application
-├── scripts/                 # Utility scripts
-├── .env                     # Environment variables (AZURE_OPENAI_API_KEY)
-├── pyproject.toml          # Python dependencies
-├── Makefile                # Shortcuts for running commands
-└── setup scripts           # Installation scripts
-```
+## System Requirements
 
-## Quick Setup (Recommended)
+### Software Prerequisites
 
-### Option 1: Complete Setup (Backend + Frontend)
+- **Operating System**: macOS, Linux, or Windows (WSL recommended)
+- **Python**: Version 3.10 or higher
+- **Node.js**: Version 18 or higher
+- **npm**: Version 9 or higher
+- **UV Package Manager**: Latest version
 
-Run the complete setup script:
+### Required API Keys
 
-```bash
-chmod +x setup.sh
-./setup.sh
-```
+Before starting, obtain the following API keys:
 
-This will:
-1. Check and install UV if needed
-2. Install all Python dependencies using UV
-3. Install all Node.js dependencies
-4. Verify your .env configuration
+1. **Google AI API Key**
+   - Required for trend discovery functionality
+   - Get from: https://aistudio.google.com/apikey
+   - Make sure to enable "Generative Language API"
 
-### Option 2: Individual Setup
+2. **Azure OpenAI API Key**
+   - Required for image transformation functionality
+   - Get from: Azure Portal > Azure OpenAI Service
 
-#### Backend Only
+---
 
-```bash
-chmod +x setup-backend.sh
-./setup-backend.sh
-```
+## Installation Steps
 
-#### Frontend Only
+### Step 1: Install Python
 
-```bash
-chmod +x setup-frontend.sh
-./setup-frontend.sh
-```
+Verify Python 3.10 or higher is installed:
 
-## Manual Setup
+\`\`\`bash
+python --version
+\`\`\`
 
-If you prefer to run commands manually:
+If not installed, download from: https://www.python.org/downloads/
 
-### 1. Backend Setup
+### Step 2: Install Node.js and npm
 
-```bash
-# Install UV (if not already installed)
+Verify Node.js and npm are installed:
+
+\`\`\`bash
+node --version
+npm --version
+\`\`\`
+
+If not installed, download from: https://nodejs.org/
+
+### Step 3: Install UV Package Manager
+
+UV is a fast Python package manager used by this project.
+
+**macOS/Linux:**
+\`\`\`bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
+\`\`\`
 
-# Install Python dependencies
+**Windows (PowerShell):**
+\`\`\`powershell
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+\`\`\`
+
+**Verify Installation:**
+\`\`\`bash
+uv --version
+\`\`\`
+
+If the command is not found after installation, restart your terminal.
+
+### Step 4: Clone or Extract Project
+
+Navigate to the project directory:
+
+\`\`\`bash
+cd /path/to/beauty-intelligence-platform
+\`\`\`
+
+### Step 5: Install Backend Dependencies
+
+From the project root directory:
+
+\`\`\`bash
 uv sync
-```
-
-### 2. Frontend Setup
-
-```bash
-# Navigate to frontend directory
-cd frontend
-
-# Install dependencies
-npm install
-
-# Return to root
-cd ..
-```
-
-### 3. Environment Configuration
-
-Ensure your `.env` file exists in the root directory with:
-
-```env
-# Azure OpenAI for Image Transformation
-AZURE_OPENAI_API_KEY=your_api_key_here
-
-# Google AI Configuration (for Trend Discovery)
-GOOGLE_GENAI_USE_VERTEXAI=True
-# GOOGLE_CLOUD_PROJECT=your-project-id-here  # Optional, can be auto-detected
-```
-
-### 4. Google Cloud Authentication (for Vertex AI)
-
-If you're using Vertex AI (recommended for sandbox/production):
-
-```bash
-# Authenticate with Google Cloud
-gcloud auth application-default login
-```
+\`\`\`
 
 This command will:
-- Open a browser for Google authentication
-- Store credentials at `~/.config/gcloud/application_default_credentials.json`
-- Allow Google ADK to automatically use Vertex AI
+- Create a Python virtual environment in \`.venv/\`
+- Install all required Python packages
+- Set up the development environment
 
-**Note**: Make sure `GOOGLE_GENAI_USE_VERTEXAI=True` in your `.env` file.
+Expected output:
+\`\`\`
+Resolved XX packages in X.XXs
+Installed XX packages in X.XXs
+\`\`\`
+
+### Step 6: Install Frontend Dependencies
+
+\`\`\`bash
+cd frontend
+npm install
+cd ..
+\`\`\`
+
+Expected output:
+\`\`\`
+added XXX packages in XXs
+\`\`\`
+
+---
+
+## API Key Configuration
+
+### Step 1: Create Environment File
+
+Copy the example environment file:
+
+\`\`\`bash
+cp .env.example .env
+\`\`\`
+
+If \`.env.example\` doesn't exist, create a new \`.env\` file in the project root.
+
+### Step 2: Configure API Keys
+
+Edit the \`.env\` file with your API keys:
+
+\`\`\`env
+# Azure OpenAI Configuration
+AZURE_OPENAI_API_KEY=your_azure_openai_api_key_here
+
+# Google AI Configuration (for Trend Discovery)
+# Set to False to use API key authentication
+GOOGLE_GENAI_USE_VERTEXAI=False
+
+# Google Cloud Project ID (optional when using API key)
+GOOGLE_CLOUD_PROJECT=your_project_id
+
+# Google API Key (required when GOOGLE_GENAI_USE_VERTEXAI=False)
+GOOGLE_API_KEY=your_google_api_key_here
+
+# Backend URL Configuration
+BACKEND_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+\`\`\`
+
+### Step 3: Replace Placeholder Values
+
+Replace the following placeholders with your actual values:
+
+1. **AZURE_OPENAI_API_KEY**
+   - Your Azure OpenAI API key
+   - Example: \`FeKhXyMpkasSmksGrNpwNEKoSSJgud4a...\`
+
+2. **GOOGLE_API_KEY**
+   - Your Google AI Studio API key
+   - Example: \`AIzaSyDd7VUIIStqZsqm1nDWImGQE...\`
+
+3. **GOOGLE_CLOUD_PROJECT** (optional)
+   - Your Google Cloud project ID
+   - Example: \`my-beauty-platform-project\`
+
+### Configuration Options
+
+**Using Google API Key (Recommended for Local Development):**
+
+\`\`\`env
+GOOGLE_GENAI_USE_VERTEXAI=False
+GOOGLE_API_KEY=your_google_api_key_here
+\`\`\`
+
+**Using Vertex AI (Requires GCP Access):**
+
+\`\`\`env
+GOOGLE_GENAI_USE_VERTEXAI=True
+GOOGLE_CLOUD_PROJECT=your_gcp_project_id
+\`\`\`
+
+Note: If using Vertex AI, you must also run:
+\`\`\`bash
+gcloud auth application-default login
+\`\`\`
+
+---
 
 ## Running the Application
 
-### Using Makefile (Easiest)
+### Option 1: Using Makefile (Recommended)
+
+The project includes a Makefile for easy startup.
 
 **Terminal 1 - Start Backend:**
-```bash
+
+\`\`\`bash
 make run-backend
-```
+\`\`\`
+
+Wait for the message:
+\`\`\`
+INFO:     Uvicorn running on http://0.0.0.0:8000
+INFO:     Application startup complete.
+\`\`\`
 
 **Terminal 2 - Start Frontend:**
-```bash
+
+Open a new terminal window and run:
+
+\`\`\`bash
 make run-frontend
-```
+\`\`\`
 
-### Using Direct Commands
+Wait for the message:
+\`\`\`
+- Local:        http://localhost:3000
+Ready in X.Xs
+\`\`\`
 
-**Backend:**
-```bash
+### Option 2: Using Direct Commands
+
+If Makefile is not available:
+
+**Terminal 1 - Start Backend:**
+
+\`\`\`bash
 uv run uvicorn src.app:app --reload --host 0.0.0.0 --port 8000
-```
+\`\`\`
 
-**Frontend:**
-```bash
-cd frontend && npm run dev
-```
+**Terminal 2 - Start Frontend:**
 
-## Access Points
+\`\`\`bash
+cd frontend
+npm run dev
+\`\`\`
+
+### Access the Application
 
 Once both services are running:
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/docs
-- **OpenAPI Schema**: http://localhost:8000/openapi.json
+- **Application UI**: http://localhost:3000
+- **Backend API Documentation**: http://localhost:8000/docs
+- **API Health Check**: http://localhost:8000
 
-## Key Features
+---
 
-### Backend (FastAPI + Google ADK)
-- RESTful API for beauty trend analysis
-- AI-powered image transformation using Azure OpenAI FLUX
-- Google ADK agent integration
-- Image editing endpoint: `/ai_transform_image`
+## Verifying the Setup
 
-### Frontend (Next.js 15)
-- Modern React 19 UI
-- Radix UI components
-- Tailwind CSS styling
-- Form handling with React Hook Form
-- Dark mode support
+### Step 1: Check Backend Health
 
-## Dependencies
+Open http://localhost:8000 in your browser. You should see:
 
-### Backend (Python)
-- `fastapi` - Web framework
-- `uvicorn` - ASGI server
-- `google-adk` - Google Agent Development Kit
-- `beautifulsoup4` - Web scraping
-- `pandas` - Data manipulation
-- `requests` - HTTP client
-- `python-dotenv` - Environment variable management
-- `httpx` - Async HTTP client
+\`\`\`json
+{
+  "message": "Estee Lauder Trend Intelligence API"
+}
+\`\`\`
 
-### Frontend (Node.js)
-- `next` v15.2.4 - React framework
-- `react` v19 - UI library
-- `@radix-ui/*` - UI components
-- `tailwindcss` v4 - Styling
-- `lucide-react` - Icons
-- `zod` - Schema validation
-- `react-hook-form` - Form management
+### Step 2: Check Frontend
+
+Open http://localhost:3000 in your browser. You should see the Estee Lauder Beauty Intelligence Platform interface with:
+
+- Navigation sidebar with "Discover Trends", "Research Findings", and "Image Lab" options
+- Estee Lauder logo at the top
+- Tiger Analytics logo at the bottom
+
+### Step 3: Test Trend Discovery
+
+1. Click "Discover Trends" in the sidebar
+2. Click the "Discover New Trends" button
+3. You should see:
+   - A loading indicator
+   - Real-time progress updates
+   - Trend cards appearing with makeup, skincare, and hair trends
+
+If errors occur, check the troubleshooting section below.
+
+### Step 4: Test Image Transformation (Optional)
+
+1. Click "Image Lab" in the sidebar
+2. Upload an image
+3. Select a category (Makeup, Skincare, or Hair)
+4. Choose a trend
+5. Click "Transform Image"
+
+---
 
 ## Troubleshooting
 
-### UV Not Found
-If UV is not found after installation, restart your terminal or run:
-```bash
-source $HOME/.local/bin/env
-```
+### Issue 1: "uv: command not found"
 
-### Port Already in Use
-If port 8000 or 3000 is already in use:
-```bash
-# Backend - use different port
+**Cause**: UV not installed or not in PATH
+
+**Solution**:
+\`\`\`bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+exec -l \$SHELL  # Restart shell
+\`\`\`
+
+### Issue 2: "Port 8000 already in use"
+
+**Cause**: Another process is using port 8000
+
+**Solution**:
+
+Find and kill the process:
+\`\`\`bash
+# macOS/Linux
+lsof -ti:8000 | xargs kill -9
+
+# Windows
+netstat -ano | findstr :8000
+taskkill /PID <process_id> /F
+\`\`\`
+
+Or use a different port:
+\`\`\`bash
 uv run uvicorn src.app:app --reload --host 0.0.0.0 --port 8001
+\`\`\`
 
-# Frontend - use different port
-cd frontend && PORT=3001 npm run dev
-```
+Then update \`.env\`:
+\`\`\`env
+BACKEND_URL=http://localhost:8001
+NEXT_PUBLIC_API_URL=http://localhost:8001
+\`\`\`
 
-### Environment Variables Not Loading
-Ensure `.env` file is in the root directory (not in `src/` or `frontend/`):
-```bash
-# Check if .env exists
-ls -la .env
+### Issue 3: "API key not valid" Error
 
-# View contents (be careful not to commit sensitive data)
-cat .env
-```
+**Cause**: Invalid or incorrect Google API key
 
-### Python Version Issues
-UV will use the Python version specified in `.python-version` file. If you encounter issues:
-```bash
-# Check current Python version
-python --version
+**Solution**:
 
-# UV will handle the correct version automatically
+1. Verify your API key at https://aistudio.google.com/apikey
+2. Ensure the key has no extra spaces or characters
+3. Check that "Generative Language API" is enabled
+4. Generate a new API key if needed
+5. Update \`.env\` file with the correct key
+6. Restart the backend server
+
+### Issue 4: Frontend Cannot Connect to Backend
+
+**Cause**: Backend not running or incorrect URL configuration
+
+**Solution**:
+
+1. Verify backend is running:
+   \`\`\`bash
+   curl http://localhost:8000
+   \`\`\`
+
+2. Check \`.env\` file has correct URLs:
+   \`\`\`env
+   NEXT_PUBLIC_API_URL=http://localhost:8000
+   \`\`\`
+
+3. Restart frontend:
+   \`\`\`bash
+   cd frontend
+   npm run dev
+   \`\`\`
+
+### Issue 5: Module Not Found Errors
+
+**Cause**: Dependencies not installed correctly
+
+**Solution**:
+
+**Backend:**
+\`\`\`bash
+rm -rf .venv
 uv sync
-```
+\`\`\`
 
-## Development Workflow
+**Frontend:**
+\`\`\`bash
+cd frontend
+rm -rf node_modules package-lock.json
+npm install
+\`\`\`
 
-1. **Make changes to backend code** in `src/`
-   - FastAPI will auto-reload on save
+### Issue 6: Python Version Error
 
-2. **Make changes to frontend code** in `frontend/`
-   - Next.js will hot-reload on save
+**Cause**: Python version is below 3.10
 
-3. **Test the API** at http://localhost:8000/docs
+**Solution**:
 
-4. **View the frontend** at http://localhost:3000
+1. Check Python version:
+   \`\`\`bash
+   python --version
+   \`\`\`
 
-## Next Steps
+2. Install Python 3.10 or higher from https://www.python.org/downloads/
 
-- Review [app.py](src/app.py) for API endpoint implementations
-- Explore the frontend components in `frontend/`
-- Check the agent implementation in `src/sephora_trend_agent/`
-- Customize the beauty trend prompts in `create_beauty_prompt()` function
+3. Reinstall dependencies:
+   \`\`\`bash
+   uv sync
+   \`\`\`
 
-## Additional Commands
+### Issue 7: "No root_agent found" Error
 
-```bash
-# Run backend tests (if available)
-uv run pytest
+**Cause**: Agent folder renamed or misconfigured
 
-# Build frontend for production
-cd frontend && npm run build
+**Solution**:
 
-# Start frontend in production mode
-cd frontend && npm start
+Verify the agent folder exists:
+\`\`\`bash
+ls src/estee_lauder_trend_agent/
+\`\`\`
 
-# Lint frontend code
-cd frontend && npm run lint
-```
+Should contain:
+- agent.py
+- config.py
+- callbacks.py
+- __init__.py
 
-## Support
+### Issue 8: Trends Not Updating
 
-For issues or questions:
-1. Check the [SUMMARY.md](SUMMARY.md) for project overview
-2. Review the API documentation at http://localhost:8000/docs
-3. Check the console output for error messages
+**Cause**: Using cached data or authentication failure
+
+**Solution**:
+
+1. Check backend terminal for errors
+2. Verify API key is working:
+   - Check backend logs for "Using Google API Key authentication"
+   - Look for "200 OK" responses, not "400" or "401" errors
+
+3. Clear browser cache and refresh
+4. Try discovering trends again
+
+---
+
+## Advanced Configuration
+
+### Using Vertex AI Instead of API Key
+
+If you have access to Google Cloud Platform:
+
+1. Install Google Cloud SDK:
+   \`\`\`bash
+   # macOS
+   brew install google-cloud-sdk
+
+   # Linux
+   curl https://sdk.cloud.google.com | bash
+   \`\`\`
+
+2. Authenticate:
+   \`\`\`bash
+   gcloud auth application-default login
+   \`\`\`
+
+3. Update \`.env\`:
+   \`\`\`env
+   GOOGLE_GENAI_USE_VERTEXAI=True
+   GOOGLE_CLOUD_PROJECT=your_gcp_project_id
+   \`\`\`
+
+4. Restart backend
+
+### Changing Default Ports
+
+**Backend Port:**
+
+Edit \`Makefile\` or run:
+\`\`\`bash
+uv run uvicorn src.app:app --reload --host 0.0.0.0 --port 8001
+\`\`\`
+
+Update \`.env\`:
+\`\`\`env
+BACKEND_URL=http://localhost:8001
+NEXT_PUBLIC_API_URL=http://localhost:8001
+\`\`\`
+
+**Frontend Port:**
+
+\`\`\`bash
+cd frontend
+PORT=3001 npm run dev
+\`\`\`
+
+---
+
+## Getting Help
+
+### Logs Location
+
+**Backend Logs:**
+- Visible in terminal where backend is running
+- Contains API requests, errors, and agent execution details
+
+**Frontend Logs:**
+- Browser console (F12 > Console tab)
+- Terminal where frontend is running
+
+### API Documentation
+
+Interactive API documentation available at:
+- http://localhost:8000/docs
+
+Features:
+- Try all endpoints directly in browser
+- View request/response schemas
+- Test with your API keys
+
+### Common Log Messages
+
+**Success Messages:**
+\`\`\`
+Using Google API Key authentication
+Authentication Method: API Key
+INFO: Application startup complete
+\`\`\`
+
+**Error Messages to Check:**
+\`\`\`
+API key not valid
+Port already in use
+Module not found
+Connection refused
+\`\`\`
+
+---
+
+## Production Deployment Notes
+
+### Security Considerations
+
+1. **Never commit .env file** - It contains sensitive API keys
+2. **Use environment variables** - Set via hosting platform
+3. **Enable HTTPS** - Use SSL certificates in production
+4. **Rate limiting** - Implement API rate limits
+5. **API key rotation** - Regularly update API keys
+
+### Environment Variables for Production
+
+Set these in your hosting platform:
+
+\`\`\`
+AZURE_OPENAI_API_KEY=<production_key>
+GOOGLE_API_KEY=<production_key>
+GOOGLE_GENAI_USE_VERTEXAI=False
+BACKEND_URL=https://your-domain.com/api
+NEXT_PUBLIC_API_URL=https://your-domain.com/api
+\`\`\`
+
+### Building for Production
+
+**Backend:**
+\`\`\`bash
+uv run uvicorn src.app:app --host 0.0.0.0 --port 8000 --workers 4
+\`\`\`
+
+**Frontend:**
+\`\`\`bash
+cd frontend
+npm run build
+npm start
+\`\`\`
+
+---
+
+## Support Contact
+
+For technical issues or questions:
+
+1. Review this guide thoroughly
+2. Check the troubleshooting section
+3. Review backend logs for error messages
+4. Contact Tiger Analytics support team
+
+---
+
+**Document Version**: 1.0
+**Last Updated**: November 2025
+**Platform**: Estee Lauder Beauty Intelligence Platform
+**Developed By**: Tiger Analytics

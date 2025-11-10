@@ -142,7 +142,7 @@ def collect_research_sources_callback(
                         )
     callback_context.state["url_to_short_id"] = url_to_short_id
     callback_context.state["sources"] = sources
-    research_report = callback_context.state.get("sephora_trend_research_findings", "")
+    research_report = callback_context.state.get("estee_lauder_trend_research_findings", "")
 
     if not research_report:
         logging.warning("No research report found in callback context")
@@ -165,7 +165,7 @@ def collect_research_sources_callback(
         report_with_citations,
     )
     processed_report = re.sub(r"\s+([.,;:])", r"\1", processed_report)
-    callback_context.state["sephora_trend_research_findings_with_citations"] = (
+    callback_context.state["estee_lauder_trend_research_findings_with_citations"] = (
         processed_report
     )
 

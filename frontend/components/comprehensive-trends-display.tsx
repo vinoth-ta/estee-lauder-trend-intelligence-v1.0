@@ -128,7 +128,7 @@ export function ComprehensiveTrendsDisplay({
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
       case "makeup":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+        return "bg-[#ebd79a]/20 text-[#040a2b] dark:bg-[#040a2b] dark:text-[#ebd79a]/30"
       case "skincare":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
       case "hair":
@@ -298,7 +298,7 @@ export function ComprehensiveTrendsDisplay({
               <div className="mt-4 p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <ShoppingBagIcon className="size-4 text-primary" />
-                  <h4 className="font-semibold text-sm">Curated Sephora Products for "{trend.name}"</h4>
+                  <h4 className="font-semibold text-sm">Curated Estee Lauder Products for "{trend.name}"</h4>
                 </div>
                 <div className="text-sm text-muted-foreground mb-3">
                   Products curated specifically for this trend based on techniques, color palette, and style
