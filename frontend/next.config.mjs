@@ -9,6 +9,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  output: 'standalone', // For Cloud Run deployment
 }
 
 export default nextConfig

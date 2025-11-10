@@ -1,0 +1,19 @@
+services:
+  # Backend API Service
+  - type: web
+    name: beauty-intelligence-backend
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: "pip install uv && uv sync"
+    startCommand: "uv run uvicorn src.app:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    envVars:
+      - key: AZURE_OPENAI_API_KEY
+        sync: false
+      - key: GOOGLE_GENAI_USE_VERTEXAI
+        value: "True"
+      - key: GOOGLE_CLOUD_PROJECT
+        value: gemini-copilot-testing
+      - key: PYTHON_VERSION
+        value: "3.11"
