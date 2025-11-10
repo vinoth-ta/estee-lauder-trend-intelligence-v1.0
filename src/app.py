@@ -1,8 +1,6 @@
 import base64
 import io
-import json
 import os
-import tempfile
 from contextlib import asynccontextmanager
 from typing import Optional
 
@@ -17,14 +15,6 @@ from pydantic import BaseModel
 AGENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 load_dotenv()
-
-# Handle Google Cloud credentials from environment variable (for Render deployment)
-if os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON"):
-    # Create temporary credentials file from environment variable
-    creds_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
-    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
-        f.write(creds_json)
-        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = f.name
 
 
 # Pydantic models
@@ -59,25 +49,14 @@ async def lifespan(_: FastAPI):
 
 app = get_fast_api_app(lifespan=lifespan, agents_dir=AGENT_DIR, web=True)
 
-# Add CORS middleware to allow Vercel frontend
+# Add CORS middleware for local development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Local development
-        "https://*.vercel.app",  # Vercel deployments
-        "https://*.render.com",  # Render deployments
-        "*"  # Allow all origins (can be restricted later)
-    ],
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint for Cloud Run and load balancers."""
-    return {"status": "healthy", "service": "Beauty Intelligence Platform"}
 
 
 def create_beauty_prompt(trend_info: TrendInfo) -> str:
@@ -284,5 +263,4 @@ async def ai_transform_image(request: ImageTransformRequest):
 
 
 if __name__ == "__main__":
-    # Use the PORT environment variable provided by Cloud Run, defaulting to 8000
-    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
+    uvicorn.run(app, host="0.0.0.0", port=8000)
