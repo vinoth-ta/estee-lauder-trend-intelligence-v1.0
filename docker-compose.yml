@@ -34,9 +34,11 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
       args:
-        NEXT_PUBLIC_API_URL: http://backend:8000
+        # For local development, use localhost
+        # For VM deployment, change to your VM's external IP (e.g., http://34.57.136.124:8000)
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     environment:
-      - NEXT_PUBLIC_API_URL=http://backend:8000
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     ports:
       - "80:8080"
     depends_on:
