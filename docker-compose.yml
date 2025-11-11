@@ -4,11 +4,24 @@ services:
       context: .
       dockerfile: Dockerfile.backend
     environment:
+      # Azure OpenAI Configuration
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+
+      # Google Cloud Configuration
+      - GOOGLE_GENAI_USE_VERTEXAI=${GOOGLE_GENAI_USE_VERTEXAI:-True}
       - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
-      - ALLOWED_ORIGINS=http://localhost,http://127.0.0.1
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-}
+
+      # CORS Configuration - Add your VM's public IP/domain here
+      # Format: http://your-vm-ip,http://your-domain.com
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost,http://127.0.0.1}
     ports:
       - "8000:8000"
+    # volumes:
+      # Mount service account credentials if using JSON key file
+      # Uncomment and adjust path if using service account JSON
+      # - ./service-account-key.json:/app/service-account-key.json:ro
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]

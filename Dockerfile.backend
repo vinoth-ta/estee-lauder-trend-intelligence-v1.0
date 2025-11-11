@@ -22,7 +22,10 @@ RUN /root/.local/bin/uv export --no-hashes --frozen > /tmp/requirements.txt && \
 
 # Copy application code
 COPY src/ ./src/
-COPY .env.example ./.env
+
+# Note: .env should NOT be copied in production
+# Use environment variables in docker-compose.yml or VM config instead
+# COPY .env.example ./.env
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
