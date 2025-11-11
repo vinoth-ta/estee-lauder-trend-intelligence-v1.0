@@ -24,15 +24,46 @@ export async function POST(req: Request) {
     return new Response(text, { status: backendRes.status })
   }
 
-  console.log(`[SSE Proxy] Starting to pipe stream...`)
+  console.log(`[SSE Proxy] Starting to stream SSE events...`)
 
-  // Pipe the SSE stream straight through
-  return new Response(backendRes.body, {
+  // Create a proper ReadableStream to forward SSE events in real-time
+  const stream = new ReadableStream({
+    async start(controller) {
+      const reader = backendRes.body!.getReader()
+      const decoder = new TextDecoder()
+
+      try {
+        let chunkCount = 0
+        while (true) {
+          const { done, value } = await reader.read()
+
+          if (done) {
+            console.log(`[SSE Proxy] Stream complete. Total chunks: ${chunkCount}`)
+            controller.close()
+            break
+          }
+
+          chunkCount++
+          const chunk = decoder.decode(value, { stream: true })
+          console.log(`[SSE Proxy] Forwarding chunk ${chunkCount}: ${chunk.substring(0, 100)}...`)
+
+          // Forward the chunk to the client
+          controller.enqueue(new TextEncoder().encode(chunk))
+        }
+      } catch (error) {
+        console.error(`[SSE Proxy] Stream error:`, error)
+        controller.error(error)
+      }
+    },
+  })
+
+  return new Response(stream, {
     status: 200,
     headers: {
       "Content-Type": "text/event-stream",
-      Connection: "keep-alive",
-      "Cache-Control": "no-cache",
+      "Cache-Control": "no-cache, no-transform",
+      "Connection": "keep-alive",
+      "X-Accel-Buffering": "no", // Disable nginx buffering
     },
   })
 }
