@@ -86,7 +86,7 @@ import {
   generateSessionId,
 } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
-import { saveTrendsToStorage } from "@/lib/trend-storage"
+import { saveTrendsToStorage, clearTrendsStorage } from "@/lib/trend-storage"
 
 interface AnalysisProgress {
   stage: string
@@ -313,6 +313,8 @@ export default function EsteeLauderTrendAnalyzer() {
   const handleRunAnalysis = async (config: AnalysisConfig) => {
     setIsAnalyzing(true)
     setAnalysisComplete(false)
+    // Clear old data from localStorage before starting new analysis
+    clearTrendsStorage()
     setTrendsData(null)
     setEsteeLauderTrendData(null)
     setResearchFindingsData(null)
