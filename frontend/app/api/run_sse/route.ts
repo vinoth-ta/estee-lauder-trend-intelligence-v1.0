@@ -26,7 +26,8 @@ export async function POST(req: Request) {
 
   console.log(`[SSE Proxy] Starting to stream SSE events...`)
 
-  // Create a proper ReadableStream to forward SSE events in real-time
+  // Use async iterator for proper SSE streaming in Next.js
+  const encoder = new TextEncoder()
   const stream = new ReadableStream({
     async start(controller) {
       const reader = backendRes.body!.getReader()
@@ -47,8 +48,8 @@ export async function POST(req: Request) {
           const chunk = decoder.decode(value, { stream: true })
           console.log(`[SSE Proxy] Forwarding chunk ${chunkCount}: ${chunk.substring(0, 100)}...`)
 
-          // Forward the chunk to the client
-          controller.enqueue(new TextEncoder().encode(chunk))
+          // Forward the chunk to the client immediately
+          controller.enqueue(encoder.encode(chunk))
         }
       } catch (error) {
         console.error(`[SSE Proxy] Stream error:`, error)
@@ -57,13 +58,15 @@ export async function POST(req: Request) {
     },
   })
 
+  // CRITICAL: Return with proper SSE headers AND ensure no buffering
   return new Response(stream, {
     status: 200,
     headers: {
-      "Content-Type": "text/event-stream",
+      "Content-Type": "text/event-stream; charset=utf-8",
       "Cache-Control": "no-cache, no-transform",
       "Connection": "keep-alive",
-      "X-Accel-Buffering": "no", // Disable nginx buffering
+      "X-Accel-Buffering": "no",
+      "Transfer-Encoding": "chunked",
     },
   })
 }
