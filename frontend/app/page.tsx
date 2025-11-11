@@ -74,7 +74,17 @@ import { ResearchFindingsDisplay } from "@/components/research-findings-display"
 import { EnhancedTrendsDisplay } from "@/components/enhanced-trends-display"
 import { TrendFocusedDisplay } from "@/components/trend-focused-display"
 import { AITrendApplication } from "@/components/ai-trend-application"
-import { esteeLauderAPI, withRetry, type ProductData, type AnalysisConfig, type EsteeLauderTrendAgentResponse, type ResearchFindingsData, type StructuredTrendsData, type SSEResponseData } from "@/lib/api"
+import {
+  esteeLauderAPI,
+  withRetry,
+  type ProductData,
+  type AnalysisConfig,
+  type EsteeLauderTrendAgentResponse,
+  type ResearchFindingsData,
+  type StructuredTrendsData,
+  type SSEResponseData,
+  generateSessionId,
+} from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { saveTrendsToStorage } from "@/lib/trend-storage"
 
@@ -325,7 +335,7 @@ export default function EsteeLauderTrendAnalyzer() {
 
       // Generate unique session ID
       const userId = "user"
-      const sessionId = `estee-lauder-session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      const sessionId = generateSessionId("estee_lauder_trend_agent", "user")
 
       const sessionResponse = await fetch("/api/session", {
         method: "POST",
@@ -547,6 +557,7 @@ export default function EsteeLauderTrendAnalyzer() {
         description: "Estee Lauder trend agent unavailable. Using sample data for demonstration.",
         variant: "default",
       })
+      throw error
     }
 
     setIsAnalyzing(false)

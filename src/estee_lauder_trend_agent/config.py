@@ -6,8 +6,8 @@ from typing import Optional
 import google.auth
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from .env file (in project root)
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
 
 # =============================================================================
 # AUTHENTICATION CONFIGURATION
@@ -25,10 +25,12 @@ if not USE_VERTEX_AI and not GOOGLE_API_KEY:
 
 if USE_VERTEX_AI:
     try:
-        _, project_id = google.auth.default()
-        os.environ.setdefault(
-            "GOOGLE_CLOUD_PROJECT", str(project_id) if project_id else "unknown"
-        )
+        # Prioritize environment variable over gcloud default
+        project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
+        if not project_id:
+            _, project_id = google.auth.default()
+        if project_id:
+            os.environ["GOOGLE_CLOUD_PROJECT"] = str(project_id)
         print(f"✅ Using Vertex AI authentication with project: {project_id}")
     except Exception as e:
         print(f"⚠️  Warning: Could not get default credentials: {e}")

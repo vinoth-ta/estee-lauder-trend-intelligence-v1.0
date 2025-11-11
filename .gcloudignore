@@ -1,0 +1,44 @@
+# Cloud Build specific ignore file
+# Don't upload these to Cloud Build
+
+.git
+.gitignore
+.gcloudignore
+
+# Environment files
+.env.local
+.env.*.local
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python cache
+__pycache__
+*.py[cod]
+*$py.class
+.Python
+.venv
+venv/
+
+# Node cache and build artifacts (but NOT package files!)
+node_modules/
+.next/
+.cache/
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# Test files
+.pytest_cache/
+.coverage
+htmlcov/

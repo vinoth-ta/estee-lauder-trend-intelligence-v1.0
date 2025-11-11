@@ -1,20 +1,36 @@
+import os
+import sys
+
+# IMPORTANT: Set environment variables BEFORE any Google imports
+# This ensures the Google SDK picks up the correct configuration
+from dotenv import load_dotenv
+load_dotenv()
+
+# Use Vertex AI authentication (production mode)
+use_vertex = os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "True").lower() == "true"
+if use_vertex:
+    print("[STARTUP] Using Vertex AI authentication (production mode)")
+else:
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if api_key:
+        os.environ["GOOGLE_API_KEY"] = api_key
+        print(f"[STARTUP] Using API Key authentication (prefix: {api_key[:20]}...)")
+    else:
+        print("[STARTUP] WARNING: GOOGLE_API_KEY not found!")
+
 import base64
 import io
-import os
 from contextlib import asynccontextmanager
 from typing import Optional
 
 import httpx
 import uvicorn
-from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from google.adk.cli.fast_api import get_fast_api_app
 from pydantic import BaseModel
 
 AGENT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-load_dotenv()
 
 
 # Pydantic models
@@ -49,14 +65,50 @@ async def lifespan(_: FastAPI):
 
 app = get_fast_api_app(lifespan=lifespan, agents_dir=AGENT_DIR, web=True)
 
-# Add CORS middleware for local development
+# Add CORS middleware for both local and production
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Test endpoint to verify API key configuration
+@app.get("/test-api-key")
+async def test_api_key():
+    """Test endpoint to verify Google API key is working."""
+    import google.genai
+
+    api_key = os.getenv("GOOGLE_API_KEY")
+    use_vertex = os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "True").lower() == "true"
+
+    if not api_key:
+        return {"error": "GOOGLE_API_KEY not set", "use_vertex_ai": use_vertex}
+
+    try:
+        # Test the API key by making a simple request
+        client = google.genai.Client(api_key=api_key)
+        response = await client.aio.models.generate_content(
+            model="gemini-2.5-flash",
+            contents="Say 'API key works!'"
+        )
+        return {
+            "success": True,
+            "message": "API key is valid and working",
+            "api_key_prefix": api_key[:20] + "...",
+            "use_vertex_ai": use_vertex,
+            "response": response.text
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "api_key_prefix": api_key[:20] + "...",
+            "use_vertex_ai": use_vertex
+        }
 
 
 def create_beauty_prompt(trend_info: TrendInfo) -> str:
