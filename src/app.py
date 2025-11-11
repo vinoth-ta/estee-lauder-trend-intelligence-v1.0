@@ -29,6 +29,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from google.adk.cli.fast_api import get_fast_api_app
 from pydantic import BaseModel
+from fastapi import Request
 
 AGENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -74,6 +75,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
 
 
 # Test endpoint to verify API key configuration
