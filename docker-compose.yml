@@ -7,6 +7,8 @@ services:
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
       - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
       - ALLOWED_ORIGINS=http://localhost,http://127.0.0.1
+    volumes:
+      - ~/.config/gcloud:/root/.config/gcloud
     ports:
       - "8000:8000"
     restart: always

@@ -33,37 +33,7 @@ from fastapi import Request
 
 AGENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-
-# Pydantic models
-class TrendInfo(BaseModel):
-    name: str
-    description: str
-    techniques: list[str]
-    category: str
-    popularity: Optional[str] = None
-    difficulty: Optional[str] = None
-    target_demographic: Optional[str] = None
-
-
-class ImageTransformRequest(BaseModel):
-    trend_info: TrendInfo
-    image_data: str  # base64 encoded image
-
-
-class ImageTransformResponse(BaseModel):
-    success: bool
-    transformed_image: Optional[str] = None  # base64 encoded image
-    error: Optional[str] = None
-
-
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    """Application lifespan manager - loads data on startup."""
-    print("Application starting up...")
-    yield
-    print("Application shutting down...")
-
-
+# Google ADK FastAPI app
 app = get_fast_api_app(lifespan=lifespan, agents_dir=AGENT_DIR, web=True)
 
 # Add CORS middleware for both local and production
