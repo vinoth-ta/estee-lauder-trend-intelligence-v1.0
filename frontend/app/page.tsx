@@ -361,7 +361,11 @@ export default function EsteeLauderTrendAnalyzer() {
       // Step 2: Start SSE connection with the agent
       setAnalysisProgress(stages[2])
 
+      // Use Next.js API route as proxy to backend (handles CORS)
       const endpoint = "/api/run_sse"
+
+      console.log("🔗 Calling backend via Next.js proxy:", endpoint)
+
       const headers: Record<string, string> = {
         Accept: "text/event-stream",
         "Content-Type": "application/json"
@@ -402,8 +406,11 @@ export default function EsteeLauderTrendAnalyzer() {
       }
 
       if (!response.ok) {
+        console.error(`❌ SSE request failed with status: ${response.status}`)
         throw new Error(`SSE request failed: ${response.status}`)
       }
+
+      console.log("✅ SSE connection established, status:", response.status)
 
       // Process SSE stream
       const reader = response.body?.getReader()
@@ -411,20 +418,40 @@ export default function EsteeLauderTrendAnalyzer() {
       let buffer = ""
       let currentStageIndex = 2
 
+      if (!reader) {
+        console.error("❌ No reader available from response.body")
+        throw new Error("No reader available")
+      }
+
+      console.log("📡 Starting SSE stream processing...")
+
       if (reader) {
+        let eventCount = 0
         while (true) {
           const { done, value } = await reader.read()
-          if (done) break
+          if (done) {
+            console.log(`📡 SSE stream ended. Total events received: ${eventCount}`)
+            break
+          }
+          eventCount++
 
           buffer += decoder.decode(value, { stream: true })
           const lines = buffer.split('\n')
           buffer = lines.pop() || ""
 
+          console.log(`📦 Received ${lines.length} lines in this chunk`)
+
           for (const line of lines) {
             if (line.startsWith('data: ')) {
+              console.log("📨 Processing SSE data line...")
               try {
                 const data: SSEResponseData = JSON.parse(line.slice(6))
-                console.log("Received SSE data:", data)
+                console.log("=== SSE Event Received ===")
+                console.log("Author:", data.author)
+                console.log("Has actions.stateDelta:", !!data.actions?.stateDelta)
+                if (data.actions?.stateDelta) {
+                  console.log("StateDelta keys:", Object.keys(data.actions.stateDelta))
+                }
 
                 // Update progress based on received data
                 if (currentStageIndex < stages.length - 1) {
@@ -457,6 +484,13 @@ export default function EsteeLauderTrendAnalyzer() {
                   // Handle structured trends data
                   if (data.actions?.stateDelta?.estee_lauder_trends_report) {
                     const trendsData = data.actions.stateDelta.estee_lauder_trends_report
+                    console.log("✅ SETTING STRUCTURED TRENDS DATA:", {
+                      makeup_count: trendsData.trends?.makeup_trends?.length || 0,
+                      skincare_count: trendsData.trends?.skincare_trends?.length || 0,
+                      hair_count: trendsData.trends?.hair_trends?.length || 0,
+                      first_makeup_trend: trendsData.trends?.makeup_trends?.[0]?.name,
+                      first_skincare_trend: trendsData.trends?.skincare_trends?.[0]?.name
+                    })
                     setStructuredTrendsData(trendsData)
                     saveTrendsToStorage(trendsData)
                     setAnalysisPhase('complete')
@@ -520,8 +554,18 @@ export default function EsteeLauderTrendAnalyzer() {
         }
       }
 
-      // If no trend data was received, use mock data
-      if (!trendsData) {
+      // Log final state after SSE processing
+      console.log("=== FINAL STATE AFTER SSE ===", {
+        hasTrendsData: !!trendsData,
+        hasStructuredTrendsData: !!structuredTrendsData,
+        hasEsteeLauderTrendData: !!esteeLauderTrendData,
+        hasResearchFindingsData: !!researchFindingsData,
+        analysisPhase: analysisPhase
+      })
+
+      // If no trend data was received from any source, use mock data
+      if (!trendsData && !structuredTrendsData && !esteeLauderTrendData) {
+        console.log("⚠️ NO DATA RECEIVED - Using mock data")
         const filteredResponse = {
           ...mockTrendsResponse,
           trends: {
@@ -542,6 +586,8 @@ export default function EsteeLauderTrendAnalyzer() {
           description: `Using sample data for demonstration. Found ${totalTrends} trends across selected categories.`,
           variant: "default",
         })
+      } else {
+        console.log("✅ DATA RECEIVED - Should display real trends")
       }
 
     } catch (error) {
