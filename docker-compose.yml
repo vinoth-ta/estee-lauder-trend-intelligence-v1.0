@@ -39,6 +39,8 @@ services:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      # Backend URL for server-side API routes (uses Docker service name)
+      - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
     ports:
       - "80:8080"
     depends_on:
