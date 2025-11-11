@@ -1,6 +1,7 @@
 export async function POST(req: Request) {
   const payload = await req.json()
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+  // Use BACKEND_URL for server-side requests (Docker network), fallback to NEXT_PUBLIC_API_URL for local dev
+  const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
   const backendRes = await fetch(`${backendUrl}/run_sse`, {
     method: "POST",
